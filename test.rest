@@ -1,0 +1,166 @@
+POST http://localhost:8000/login HTTP/1.1
+Content-Type: application/json
+
+{'username': '', 'password':''}
+
+###
+
+POST http://localhost:8000/auth/signup HTTP/1.1
+Content-Type: application/json
+ 
+{"email":"luis@home.py","password":"luis7777","nombre": "luis", "apellido":"diaz" }
+
+
+###
+
+GET http://localhost:8000/test_token HTTP/1.1
+Content-Type: application/json
+
+ {}
+
+###
+POST http://localhost:8000/auth/token/ HTTP/1.1
+Content-Type: application/json
+
+ {"email":"julieta@home.py", "password":"julieta7777"}
+
+###
+POST http://localhost:8000/auth/token/refresh/ HTTP/1.1
+Content-Type: application/json
+
+ {"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMDEwNTE5NSwiaWF0IjoxNzEwMDE4Nzk1LCJqdGkiOiI1YmU0ZjE4NzFiNTY0NTYzOTQ5NWEyYTY3NzI1OGQ1MyIsInVzZXJfaWQiOjExLCJub21icmUiOiJqdWVsaWV0YSJ9.iDzbJKRxGGwcbesIQckGzWS50L71vpK5p-ESbCD6rMc"}
+
+
+
+# ---testeo de alumnos---
+   
+###
+POST    http://localhost:8000/academico/alumnos/ HTTP/1.1
+Content-Type: application/json
+ 
+ {"cedula":"8523232", "nombre":"Magnus Leando", "apellido":"Quintero Santacruz",
+                "fecha_nac":"2024-1-4", "telefono":"",
+                "nacionalidad":"paraguaya", "direccion":"", 
+                "barrio":"san antonio", "alergico_a":"", "edad_primer_grado":"6",
+                "curso_jardin":"no", "perfil_psicologico":"", "cantidad_hermanos":"5"}  
+
+###
+PUT     http://localhost:8000/academico/alumnos/ HTTP/1.1
+Content-Type: application/json
+ 
+ {"cedula":"5412223", "nombre":"Jose Alexander", "apellido":"Aquino Diaz",
+                "fecha_nac":"2001-11-05", "telefono":"",
+                "nacionalidad":"paraguaya", "direccion":"", 
+                "barrio":"Universo", "alergico_a":"", "edad_primer_grado":"6",
+                "curso_jardin":"Si", "perfil_psicologico":"", "cantidad_hermanos":"2"}  
+
+###
+GET    http://localhost:8000/academico/alumnos/ HTTP/1.1
+Content-Type: application/json
+ 
+#testeo de grados
+
+###
+GET http://localhost:8000/academico/grados/ HTTP/1.1
+
+###
+post   http://localhost:8000/academico/grados/ HTTP/1.1
+Content-Type: application/json
+
+{"nombre":"Tercer Grado", "grado":"3", "nivel":"Primer Ciclo", "turno":"mañana"}
+
+
+#testeo de matriculacion
+
+###
+POST http://localhost:8000/academico/matricula/ HTTP/1.1
+Content-Type: application/json
+
+{"id_alumno":"2", "id_grado":"1", "anio_lectivo":"2024", "fecha_inscripcion":"2024-02-05"}
+
+###
+GET http://localhost:8000/academico/matricula HTTP/1.1
+Content-Type: application/json
+
+#------ testeo becas ------
+
+###
+GET http://localhost:8000/academico/beca/ HTTP/1.1
+Content-Type: application/json
+
+### 
+POST  http://localhost:8000/academico/beca/ HTTP/1.1
+Content-Type: application/json
+ 
+{"nombre":"Beca Hijo de pastor", "descripcion":"Beca aplicada a alumnos que son hijos de pastores.",
+ "monto":"0","porcentaje":"30","es_activo":"True"}  
+
+###
+PUT  http://localhost:8000/academico/beca/1/ HTTP/1.1
+Content-Type: application/json
+
+{"nombre":"Beca Fundacion", "descripcion":"Beca para los alumnos de la funcacion unidos por cristo",
+ "monto":"0","porcentaje":"100","es_activo":"True"}  
+
+#------ testeo becados ------
+
+###
+GET http://localhost:8000/academico/becado/ HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:8000/academico/becado/beca/2 HTTP/1.1
+Content-Type: application/json
+
+###
+POST http://localhost:8000/academico/becado/ HTTP/1.1
+Content-Type: application/json
+ 
+{"id_beca":"4","id_matricula":"2", "es_activo":"True", "fecha_inicio":"2024-02-15"}
+
+#------ testeo clientes ------
+
+###
+post http://localhost:8000/academico/cliente/ HTTP/1.1
+Content-Type: application/json
+ 
+{"cedula":"555",
+"ruc":"454-5",
+"nombre":"Hugo Quintero",
+"apellido":"Quintero Aquino",
+"telefono":"5258",
+"email":"hugo@home.com",
+"direccion":"ypane-central",
+"tipo":"F"}
+###
+put http://localhost:8000/academico/cliente/2/ HTTP/1.1
+Content-Type: application/json
+ 
+{"cedula":"777",
+"ruc":"",
+"nombre":"Isidora",
+"apellido":"Santacruz",
+"telefono":"555888",
+"email":"izi@home.com",
+"direccion":"ypane-central",
+"tipo":"F"}
+
+###
+GET  http://localhost:8000/academico/cliente/ HTTP/1.1
+Content-Type: application/json
+
+#--------------------testeo responsables ----------------------
+###
+post  http://localhost:8000/academico/responsable/ HTTP/1.1
+Content-Type: application/json
+
+{"cliente":"2",
+"alumno":"2",
+"ocupacion":"Ama de casa",
+"tipo_relacion":"Madre",
+"es_activo":"True"}
+
+###
+get  http://localhost:8000/academico/responsable/ HTTP/1.1
+Content-Type: application/json
+
