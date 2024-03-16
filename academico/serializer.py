@@ -4,7 +4,7 @@ from .models import Alumno, Grado, Matricula
 class AlumnoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alumno
-        fields = ['cedula', 'nombre', 'apellido',
+        fields = ['cedula', 'nombre', 'apellido', 'genero',
                 'fecha_nac',
                 'nacionalidad', 
                 'barrio', 'edad_primer_grado',
