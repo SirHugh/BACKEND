@@ -1,6 +1,9 @@
 from django.db import models
 
 # Create your models here.
+def upload_to(instance, filename):
+    return 'Fotocarnets/{filename}'.format(filename=filename)
+
 class Alumno(models.Model):
 
     OPCIONES_GENERO = [
@@ -20,10 +23,10 @@ class Alumno(models.Model):
     barrio = models.CharField(max_length=50)
     alergico_a = models.CharField(max_length=50)
     edad_primer_grado = models.IntegerField()
-    curso_jardin = models.CharField(max_length=2)
-    perfil_psicologico = models.CharField(max_length=254)
+    curso_jardin = models.CharField(max_length=2, blank=True)
+    perfil_psicologico = models.CharField(max_length=254, blank=True)
     cantidad_hermanos = models.IntegerField()
-    fotocarnet = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=None, null=True)
+    fotocarnet = models.ImageField(upload_to=upload_to, blank=True, null=True)
 
 
     class Meta:

@@ -8,10 +8,10 @@ Content-Type: application/json
 POST http://localhost:8000/auth/signup HTTP/1.1
 Content-Type: application/json
  
-{"email":"luis@home.py","password":"luis7777","nombre": "luis", "apellido":"diaz" }
+{"email":"hugo@home.py","password":"hugo7777","nombre": "hugo", "apellido":"quintero" }
 
 
-###
+### 
 
 GET http://localhost:8000/test_token HTTP/1.1
 Content-Type: application/json
@@ -45,19 +45,20 @@ Content-Type: application/json
                 "curso_jardin":"no", "perfil_psicologico":"", "cantidad_hermanos":"5"}  
 
 ###
-PUT     http://localhost:8000/academico/alumnos/ HTTP/1.1
+POST     http://localhost:8000/academico/alumnos/ HTTP/1.1
 Content-Type: application/json
- 
- {"cedula":"5412223", "nombre":"Jose Alexander", "apellido":"Aquino Diaz",
-                "fecha_nac":"2001-11-05", "telefono":"",
+  
+ {"cedula":"3333525", "nombre":"Ana", "apellido":"Sosa",
+                "fecha_nac":"2024-1-04", "telefono":"",
                 "nacionalidad":"paraguaya", "direccion":"", 
                 "barrio":"Universo", "alergico_a":"", "edad_primer_grado":"6",
-                "curso_jardin":"Si", "perfil_psicologico":"", "cantidad_hermanos":"2"}  
+                "curso_jardin":"Si", "perfil_psicologico":"", "cantidad_hermanos":"2",
+                "genero":"F"}  
 
 ###
-GET    http://localhost:8000/academico/alumnos/ HTTP/1.1
+GET    http://localhost:8000/academico/alumnos/?page=1 HTTP/1.1
 Content-Type: application/json
- 
+  
 #testeo de grados
 
 ###
