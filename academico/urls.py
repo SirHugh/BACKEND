@@ -1,11 +1,11 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from academico import views
-from .views import becadoListCreateView, BecadoDetailView, ClienteDetailView, ClienteListCreateView
+from .views import becadoListCreateView, BecadoDetailView, ClienteDetailView, ClienteListCreateView, AlumnoListCreateView, AlumnoDetailView
 
 urlpatterns = [
-    path('alumnos/', views.alumno_list),
-    path('alumnos/<int:pk>/', views.alumno_detail),
+    path('alumnos/', AlumnoListCreateView.as_view(), name='alumnos'),
+    path('alumnos/<int:pk>/', AlumnoDetailView.as_view()),
     path('grados/', views.grado_list),
     path('grados/<int:pk>/', views. grado_detail),
     path('matricula/', views.matricula_list),

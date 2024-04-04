@@ -5,11 +5,9 @@ class AlumnoInputSerializer(serializers.ModelSerializer):
     fotocarnet = serializers.ImageField(required=False)
     class Meta:
         model = Alumno
-        fields = ['cedula','nombre', 'apellido', 'genero', 'fecha_nac', 'telefono', 'nacionalidad',
-                'direccion', 'barrio', 'edad_primer_grado', 'curso_jardin','cantidad_hermanos', 'fotocarnet']
+        fields = '__all__'
         
 class AlumnoOutputSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Alumno
         fields = ['id_alumno', 'nombre', 'apellido', 'cedula', 'fecha_nac', 'telefono', 'fotocarnet']
@@ -23,7 +21,7 @@ class AlumnoOutputSerializer(serializers.ModelSerializer):
 class GradoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grado
-        fields = ['nombre', 'grado', 'nivel', 'turno']
+        fields = '__all__'
 
 
 class MatriculaInputSerializer(serializers.ModelSerializer):

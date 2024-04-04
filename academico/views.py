@@ -1,19 +1,22 @@
 from rest_framework import status, generics
 from rest_framework import status
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes 
 from rest_framework.response import Response
 from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable
 from .serializer import AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters 
 import math 
+
 
 # vista de alumnos.
 
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser, FormParser])
 def alumno_list(request):
-
+     
     if request.method == 'GET':
         PAGE_SIZE = 10;
         
@@ -32,13 +35,14 @@ def alumno_list(request):
         return Response({'data': serializer.data, 'number_of_pages': number_of_pages } )
         
 
-    elif request.method == 'POST':
+    elif  request.method == 'POST' or request.method =='PUT':   # para agregar o actualizar un alumno
         serializer = AlumnoInputSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+   
+   
 @api_view(['GET', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, FormParser])
 def alumno_detail(request, pk):
@@ -308,3 +312,22 @@ def responsable_detail(request, pk):
         responsable.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
+
+class AlumnoListCreateView(generics.ListCreateAPIView):
+    queryset = Alumno.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
+    serializer_class = AlumnoOutputSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['^cedula', '^nombre', '^apellido']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AlumnoInputSerializer
+        return AlumnoOutputSerializer  
+
+
+class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Alumno.objects.all()
+    serializer_class = AlumnoInputSerializer
