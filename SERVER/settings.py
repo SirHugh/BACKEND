@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'coreapi',
     'rest_framework_simplejwt',
     'django_filters',
+    'qr_code',
 
     ##intall apps
     'accounts',  

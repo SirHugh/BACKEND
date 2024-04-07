@@ -38,7 +38,7 @@ Content-Type: application/json
 POST    http://localhost:8000/academico/alumnos/ HTTP/1.1
 Content-Type: multipart/form-data
  
- {"cedula":"8523232", "nombre":"Magnus Leando", "apellido":"Quintero Santacruz",
+ {"cedula":"89000005", "nombre":"Lorenzo", "apellido":"Quintana",
                 "fecha_nac":"2024-1-4", "telefono":"",
                 "nacionalidad":"paraguaya", "direccion":"", 
                 "barrio":"san antonio", "alergico_a":"", "edad_primer_grado":"6",
@@ -72,9 +72,21 @@ GET http://localhost:8000/academico/grados/ HTTP/1.1
 post   http://localhost:8000/academico/grados/ HTTP/1.1
 Content-Type: application/json
 
-{"nombre":"Septimo Grado", "grado":"7", "nivel":"Tercer Ciclo", "turno":"Mañana", "seccion":"a"}
+{"nombre":"Septimo Grado", "grado":"7", "nivel":"Tercer Ciclo", "turno":"Mañana", "seccion":"", "es_activo":true}
 
+###
+PATCH    http://localhost:8000/academico/grados/9/ HTTP/1.1
+Content-Type: application/json
 
+{"nombre":"Noveno Grado", "grado":"9", "nivel":"Tercer Ciclo"}
+
+###
+PATCH   http://localhost:8000/academico/grados/8/ HTTP/1.1
+Content-Type: application/json
+
+{"es_activo":false}
+
+ 
 #testeo de matriculacion
 
 ###
@@ -196,10 +208,9 @@ Content-Type: application/json
 
 ### 
 
-get  http://localhost:8000/academico/alumnos/?search=500 HTTP/1.1
+get  http://localhost:8000/academico/alumnos/?search=84772 HTTP/1.1
 Content-Type: application/json
 
 ### 
-
-get  http://localhost:8000/academico/alumnos/  HTTP/1.1
+get  http://localhost:8000/academico/alumnos/13  HTTP/1.1
 Content-Type: application/json

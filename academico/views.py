@@ -1,12 +1,13 @@
 from rest_framework import status, generics
+from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.decorators import api_view, parser_classes 
+from rest_framework.decorators import api_view, parser_classes, permission_classes 
 from rest_framework.response import Response
 from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable
 from .serializer import AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters 
 import math 
 
@@ -42,7 +43,7 @@ def alumno_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
    
-   
+
 @api_view(['GET', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, FormParser])
 def alumno_detail(request, pk):
@@ -72,6 +73,7 @@ def alumno_detail(request, pk):
 #vista de grados
     
 @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
 def grado_list(request):
     """
     Crear un grado o listar los grados
@@ -313,8 +315,17 @@ def responsable_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
+class GradoListCreateView(generics.ListCreateAPIView):
+    queryset = Grado.objects.all()
+    pagination_class = None
+    serializer_class = GradoSerializer
+    
+class GradoDetailView(generics.RetrieveUpdateAPIView): 
+    queryset = Grado.objects.all()
+    serializer_class = GradoSerializer
 
 class AlumnoListCreateView(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = AlumnoOutputSerializer
@@ -329,5 +340,7 @@ class AlumnoListCreateView(generics.ListCreateAPIView):
 
 
 class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     serializer_class = AlumnoInputSerializer
+

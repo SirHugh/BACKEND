@@ -7,6 +7,12 @@ from .serializer import UserSerializer
 from rest_framework import status
 from .models import User
 
+import qrcode
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated 
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -47,3 +53,24 @@ def signup(request):
 def test_token(request):
     name= 'hugo soy yo'
     return Response({name})
+
+
+
+class QRCodeView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        # token = request.auth.access
+        # serializer = MyTokenObtainPairSerializer(data={'username': request.user.username, 'password': 'password'})
+        # serializer.is_valid(raise_exception=True)
+        # token = serializer.validated_data['access']
+        token = AccessToken.for_user(request.user) 
+        url = 'http://localhost:5174/Inscripci%C3%B3n/?auth='  + str(token) 
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        response = HttpResponse(content_type='image/png')
+        img.save(response, 'PNG')
+
+        return  response

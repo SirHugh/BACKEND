@@ -39,10 +39,11 @@ class Grado(models.Model):
     grado = models.IntegerField()
     nivel = models.CharField(max_length=100)
     turno = models.CharField(max_length=15)
-    seccion = models.CharField(max_length=2)
+    seccion = models.CharField(max_length=2, blank=True, null=True)
+    es_activo = models.BooleanField(default=False)
     
     class Meta: 
-        ordering = ['grado']
+        ordering = ['grado' ]
 
 class Matricula(models.Model):
     id_matricula = models.AutoField(primary_key=True)

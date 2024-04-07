@@ -13,6 +13,7 @@ urlpatterns = [
     
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('qr-code/', views.QRCodeView.as_view(), name='qr-code-generate'),
     
     re_path('login', views.login),
     re_path('signup', views.signup),
