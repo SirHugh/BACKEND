@@ -9,6 +9,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters 
+from django_filters.rest_framework import DjangoFilterBackend
 import math 
 
 
@@ -325,10 +326,9 @@ class GradoDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = GradoSerializer
 
 class AlumnoListCreateView(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-    serializer_class = AlumnoOutputSerializer
     pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ['^cedula', '^nombre', '^apellido']
@@ -344,3 +344,23 @@ class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Alumno.objects.all()
     serializer_class = AlumnoInputSerializer
 
+class MatriculaListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Matricula.objects.all()
+    pagination_class = None
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['id_grado', 'anio_lectivo']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return MatriculaInputSerializer
+        return MatriculaOutputSerializer 
+
+class MatriculaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Matricula.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return MatriculaInputSerializer
+        return MatriculaOutputSerializer 

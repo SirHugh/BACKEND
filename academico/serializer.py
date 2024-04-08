@@ -39,7 +39,6 @@ class BecaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beca
         fields = '__all__'
-        #['id_beca', 'nombre', 'descripcion', 'monto','porcentaje','es_activo']  
 
 class BecadoSerializer(serializers.ModelSerializer):
     class Meta:

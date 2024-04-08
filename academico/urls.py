@@ -1,18 +1,18 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from academico import views
-from .views import GradoListCreateView, GradoDetailView, becadoListCreateView, BecadoDetailView, ClienteDetailView, ClienteListCreateView, AlumnoListCreateView, AlumnoDetailView
+from .views import GradoDetailView, becadoListCreateView, BecadoDetailView, ClienteDetailView, ClienteListCreateView, AlumnoListCreateView, AlumnoDetailView
 
 urlpatterns = [
     # alumnos endpoints
     path('alumnos/', AlumnoListCreateView.as_view(), name='alumnos'),
     path('alumnos/<int:pk>/', AlumnoDetailView.as_view()),
     # grados endpoints
-    path('grados/', GradoListCreateView.as_view()),
+    path('grados/', views.GradoListCreateView.as_view()),
     path('grados/<int:pk>/', GradoDetailView.as_view()),
     # matriculas endpoints
-    path('matricula/', views.matricula_list),
-    path('matricula/<int:pk>/', views.matricula_detail),
+    path('matricula/', views.MatriculaListCreateView.as_view()),
+    path('matricula/<int:pk>/', views.MatriculaDetailView.as_view()),
     path('grados/', views.grado_list),
     path('grados/<int:pk>/', views.grado_detail),
     path('matricula/', views.matricula_list),
