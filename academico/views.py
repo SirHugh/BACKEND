@@ -317,16 +317,18 @@ def responsable_detail(request, pk):
     
 
 class GradoListCreateView(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Grado.objects.all()
     pagination_class = None
     serializer_class = GradoSerializer
     
 class GradoDetailView(generics.RetrieveUpdateAPIView): 
+    permission_classes = (IsAuthenticated,)
     queryset = Grado.objects.all()
     serializer_class = GradoSerializer
 
 class AlumnoListCreateView(generics.ListCreateAPIView):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     parser_classes = [MultiPartParser, FormParser]
     pagination_class = PageNumberPagination
@@ -345,7 +347,7 @@ class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AlumnoInputSerializer
 
 class MatriculaListCreateView(generics.ListCreateAPIView):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all()
     pagination_class = None
     filter_backends = [DjangoFilterBackend]
@@ -357,7 +359,7 @@ class MatriculaListCreateView(generics.ListCreateAPIView):
         return MatriculaOutputSerializer 
 
 class MatriculaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all()
 
     def get_serializer_class(self):
