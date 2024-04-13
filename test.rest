@@ -63,7 +63,7 @@ Content-Type: application/json
 GET    http://localhost:8000/academico/alumnos/26 HTTP/1.1
 Content-Type: multipart/form-data 
 
-#testeo de grados
+#--------------------------------------testeo de grados----------------------------
 
 ###
 GET http://localhost:8000/academico/grados/ HTTP/1.1
@@ -72,7 +72,7 @@ GET http://localhost:8000/academico/grados/ HTTP/1.1
 post   http://localhost:8000/academico/grados/ HTTP/1.1
 Content-Type: application/json
 
-{"nombre":"Septimo Grado", "grado":"7", "nivel":"Tercer Ciclo", "turno":"Mañana", "seccion":"", "es_activo":true}
+{"nombre":"Septimo Grado", "grado":"7", "nivel":"Tercer Ciclo", "turno":"Tarde", "seccion":"", "es_activo":true}
 
 ###
 PATCH    http://localhost:8000/academico/grados/9/ HTTP/1.1
@@ -87,7 +87,7 @@ Content-Type: application/json
 {"es_activo":false}
 
  
-#testeo de matriculacion
+#--------------------------testeo de matriculacion------------------------------------------
 
 ###
 POST http://localhost:8000/academico/matricula/ HTTP/1.1
@@ -95,31 +95,37 @@ Content-Type: application/json
 
 {"id_alumno":"2", "id_grado":"1", "anio_lectivo":"2024", "fecha_inscripcion":"2024-02-05"}
 
-###
-GET http://localhost:8000/academico/matricula HTTP/1.1
+### 
+patch http://localhost:8000/academico/matricula/4/ HTTP/1.1
 Content-Type: application/json
 
-#------ testeo becas ------
+{ "id_alumno":"30"}
+
+### 
+get http://localhost:8000/academico/matricula/?anio_lectivo=2024&page=2 HTTP/1.1
+Content-Type: application/json
+
+#------------------------------------------------------- testeo becas ---------------------------------
 
 ###
-GET http://localhost:8000/academico/beca/ HTTP/1.1
+GET http://localhost:8000/academico/beca/2 HTTP/1.1
 Content-Type: application/json
 
 ### 
 POST  http://localhost:8000/academico/beca/ HTTP/1.1
 Content-Type: application/json
  
-{"nombre":"Beca Hijo de pastor", "descripcion":"Beca aplicada a alumnos que son hijos de pastores.",
- "monto":"0","porcentaje":"30","es_activo":"True"}  
+{"nombre":"Beca Fundacion UPC", "descripcion":"Beca para estudiantes procedentes de la fundación Unidos Por Cristo",
+ "monto":"0","porcentaje":"100","es_activo":false}  
 
 ###
-PUT  http://localhost:8000/academico/beca/1/ HTTP/1.1
+PUT  http://localhost:8000/academico/beca/2/ HTTP/1.1
 Content-Type: application/json
 
-{"nombre":"Beca Fundacion", "descripcion":"Beca para los alumnos de la funcacion unidos por cristo",
- "monto":"0","porcentaje":"100","es_activo":"True"}  
+{"nombre":"Beca Alumno Sobresaliente", "descripcion":"Beca para los alumnos con promedio superior o igual a 4.05",
+ "monto":"0","porcentaje":"12","es_activo":"True"}  
 
-#------ testeo becados ------
+#----------------------------------------------- testeo becados ---------------------------------------------------------
 
 ###
 GET http://localhost:8000/academico/becado/ HTTP/1.1
@@ -133,7 +139,7 @@ Content-Type: application/json
 POST http://localhost:8000/academico/becado/ HTTP/1.1
 Content-Type: application/json
  
-{"id_beca":"1","id_matricula":"5", "es_activo":"True", "fecha_inicio":"2024-02-15"}
+{"id_beca":"3","id_matricula":"8", "es_activo":false, "fecha_inicio":"2024-02-15"}
 
 #------ testeo clientes ------
 
@@ -208,7 +214,7 @@ Content-Type: application/json
 
 ### 
 
-get  http://localhost:8000/academico/alumnos/?search=84772 HTTP/1.1
+get  http://localhost:8000/academico/alumnos/?search=jose HTTP/1.1
 Content-Type: application/json
 
 ### 

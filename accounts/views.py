@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .serializer import UserSerializer
-from rest_framework import status
+from rest_framework import status, generics, filters
 from .models import User
 
 import qrcode
@@ -12,6 +12,8 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.contrib.auth.models import Group
+import json
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -20,6 +22,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['nombre'] = user.nombre
+        token['groups'] = [group.name for group in user.groups.all()]
         # ...
 
         return token
@@ -46,7 +49,7 @@ def signup(request):
         user.set_password(request.data['password'])
         user.save()
         response = {'Usuario Creado Exitosamente!'}
-        return Response(data=response, status=status.HTTP_201_CREATED)
+        return Response(data=user, status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -60,10 +63,6 @@ class QRCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        # token = request.auth.access
-        # serializer = MyTokenObtainPairSerializer(data={'username': request.user.username, 'password': 'password'})
-        # serializer.is_valid(raise_exception=True)
-        # token = serializer.validated_data['access']
         token = AccessToken.for_user(request.user) 
         url = 'http://localhost:5174/Inscripci%C3%B3n/?auth='  + str(token) 
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -74,3 +73,14 @@ class QRCodeView(APIView):
         img.save(response, 'PNG')
 
         return  response
+
+ 
+class UsersListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer 
+    pagination_class = None
+
+
+
+ 

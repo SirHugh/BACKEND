@@ -27,20 +27,25 @@ class GradoSerializer(serializers.ModelSerializer):
 class MatriculaInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Matricula
-        fields = ['id_matricula', 'id_alumno', 'id_grado', 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno']
+        fields = ['id_matricula', 'id_alumno', 'id_grado', 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno', 'es_activo']
 
 class MatriculaOutputSerializer(serializers.ModelSerializer):
     id_alumno=AlumnoOutputSerializer()
     class Meta:
         model = Matricula
-        fields = ['id_matricula', 'id_alumno', 'id_grado', 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno']
+        fields = '__all__'
 
 class BecaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beca
         fields = '__all__'
 
-class BecadoSerializer(serializers.ModelSerializer):
+class BecadoInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Becado
+        fields = '__all__'
+class BecadoOutputSerializer(serializers.ModelSerializer):
+    id_matricula = MatriculaOutputSerializer()
     class Meta:
         model = Becado
         fields = ['id', 'id_beca', 'id_matricula', 'es_activo', 'fecha_inicio']
