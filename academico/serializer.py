@@ -16,24 +16,28 @@ class AlumnoOutputSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         photo_url = alumno.photo.url
         return request.build_absolute_uri(photo_url)
-
-
+ 
 class GradoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grado
         fields = '__all__'
 
+class GradoNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Grado
+        fields = ['id_grado', 'grado', 'nombre']
 
 class MatriculaInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Matricula
-        fields = ['id_matricula', 'id_alumno', 'id_grado', 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno', 'es_activo']
+        fields = '__all__'
 
 class MatriculaOutputSerializer(serializers.ModelSerializer):
     id_alumno=AlumnoOutputSerializer()
+    id_grado=GradoNameSerializer()
     class Meta:
         model = Matricula
-        fields = '__all__'
+        fields = ['id_matricula', 'id_alumno', 'id_grado' , 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno', 'es_activo']
 
 class BecaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,7 +52,7 @@ class BecadoOutputSerializer(serializers.ModelSerializer):
     id_matricula = MatriculaOutputSerializer()
     class Meta:
         model = Becado
-        fields = ['id', 'id_beca', 'id_matricula', 'es_activo', 'fecha_inicio']
+        fields = '__all__'
 
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:

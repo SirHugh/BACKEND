@@ -249,21 +249,7 @@ def becado_detail(request, pk):
         becado.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-class becadoListCreateView(generics.ListCreateAPIView):
-    queryset = Becado.objects.all()
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
-            return BecadoInputSerializer
-        return BecadoOutputSerializer 
 
-class BecadoDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Becado.objects.all()
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
-            return BecadoInputSerializer
-        return BecadoOutputSerializer 
 
 class ClienteListCreateView(generics.ListCreateAPIView):
     queryset = Cliente.objects.all()
@@ -335,13 +321,14 @@ class GradoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Grado.objects.all()
     serializer_class = GradoSerializer
 
+#-------------Serializadores de alumno----------------------------------
 class AlumnoListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     parser_classes = [MultiPartParser, FormParser]
     pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
-    search_fields = ['^cedula', '^nombre', '^apellido']
+    search_fields = ['=cedula', '^nombre', '^apellido']
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -362,22 +349,20 @@ class OptionalPagination(PageNumberPagination):
             return super().paginate_queryset(queryset, request, view=view)
         return None
  
-
+#------------------------------Vistas de Matriculas-------------------------------
 class MatriculaListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all().order_by('id_alumno__apellido')
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo']
-    search_fields = ['^id_alumno__apellido', 'id_alumno__nombre','^id_grado__grado', ]
+    search_fields = ['^id_alumno__apellido', 'id_alumno__nombre','=id_alumno__cedula','^id_grado__grado',  ]
 
     def get_serializer_class(self):
         if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return MatriculaInputSerializer
         return MatriculaOutputSerializer 
-    
-    
-
+     
 class MatriculaDetailView(generics.RetrieveUpdateDestroyAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all()
@@ -387,4 +372,33 @@ class MatriculaDetailView(generics.RetrieveUpdateDestroyAPIView):
             return MatriculaInputSerializer
         return MatriculaOutputSerializer 
 
+# ---------------------------------vistas de becas-----------------------
+class BecaListCreateView(generics.ListCreateAPIView):
+    queryset = Beca.objects.all().order_by("-es_activo")
+    serializer_class = BecaSerializer
+    pagination_class = None
 
+class BecaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Beca.objects.all()
+    serializer_class = BecaSerializer
+# ---------------------------------vistas de becados----------------------
+class becadoListCreateView(generics.ListCreateAPIView):
+    queryset = Becado.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    pagination_class = PageNumberPagination
+    filterset_fields = ['id_beca', 'id_matricula']
+    search_fields = ['^id_matricula__id_alumno__apellido', '^id_matricula__id_alumno__nombre', '^id_matricula__id_alumno__cedula' ]
+
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return BecadoInputSerializer
+        return BecadoOutputSerializer 
+
+class BecadoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Becado.objects.all()
+        
+    def get_serializer_class(self):
+        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return BecadoInputSerializer
+        return BecadoOutputSerializer 

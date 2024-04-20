@@ -22,7 +22,7 @@ Content-Type: application/json
 POST http://localhost:8000/auth/token/ HTTP/1.1
 Content-Type: application/json
 
- {"email":"julieta@home.py", "password":"julieta7777"}
+ {"email":"magnus@home.py", "password":"magnus7777"}
 
 ###
 POST http://localhost:8000/auth/token/refresh/ HTTP/1.1
@@ -56,7 +56,7 @@ Content-Type: application/json
                 "genero":"F"}  
 
 ###
-GET    http://localhost:8000/academico/alumnos?search=7009000 HTTP/1.1
+GET    http://localhost:8000/academico/alumnos/?search=7009000 HTTP/1.1
 Content-Type: application/json
 
 ###
@@ -88,6 +88,9 @@ Content-Type: application/json
 
  
 #--------------------------testeo de matriculacion------------------------------------------
+### 
+get http://localhost:8000/academico/matricula/ HTTP/1.1
+Content-Type: application/json
 
 ###
 POST http://localhost:8000/academico/matricula/ HTTP/1.1
@@ -96,14 +99,15 @@ Content-Type: application/json
 {"id_alumno":"2", "id_grado":"1", "anio_lectivo":"2024", "fecha_inscripcion":"2024-02-05"}
 
 ### 
-patch http://localhost:8000/academico/matricula/4/ HTTP/1.1
+patch http://localhost:8000/academico/matricula/1/ HTTP/1.1
 Content-Type: application/json
 
-{ "id_alumno":"30"}
+{ "es_activo":true}
 
 ### 
-get http://localhost:8000/academico/matricula/?anio_lectivo=2024&page=2 HTTP/1.1
+get http://localhost:8000/academico/matricula/?es_activo=&search=8549&page=1 HTTP/1.1
 Content-Type: application/json
+
 
 #------------------------------------------------------- testeo becas ---------------------------------
 
@@ -115,31 +119,47 @@ Content-Type: application/json
 POST  http://localhost:8000/academico/beca/ HTTP/1.1
 Content-Type: application/json
  
-{"nombre":"Beca Fundacion UPC", "descripcion":"Beca para estudiantes procedentes de la fundación Unidos Por Cristo",
- "monto":"0","porcentaje":"100","es_activo":false}  
+{"id_beca":"", "nombre":"Familia Numerosa", "descripcion":"Beca para estudiantes con hermanos en la institución",
+ "monto":"0","porcentaje":"10","es_activo":false}  
 
 ###
-PUT  http://localhost:8000/academico/beca/2/ HTTP/1.1
+PUT  http://localhost:8000/academico/beca/4/ HTTP/1.1
 Content-Type: application/json
 
-{"nombre":"Beca Alumno Sobresaliente", "descripcion":"Beca para los alumnos con promedio superior o igual a 4.05",
- "monto":"0","porcentaje":"12","es_activo":"True"}  
+{"nombre":"Beca Mejor Alumno", "descripcion":"Beca para los alumnos con promedio superior o igual a 4.55",
+ "monto":"0","porcentaje":"25","es_activo":"True"}  
+
+###
+PATCH  http://localhost:8000/academico/beca/2/ HTTP/1.1
+Content-Type: application/json
+
+{"es_activo": true}
 
 #----------------------------------------------- testeo becados ---------------------------------------------------------
 
 ###
-GET http://localhost:8000/academico/becado/ HTTP/1.1
+GET http://localhost:8000/academico/becado/?page=2 HTTP/1.1
 Content-Type: application/json
 
 ###
-GET http://localhost:8000/academico/becado/beca/2 HTTP/1.1
+GET http://localhost:8000/academico/becado/?id_beca=5&id_matricula=9 HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:8000/academico/becado/?search=9000900 HTTP/1.1
 Content-Type: application/json
 
 ###
 POST http://localhost:8000/academico/becado/ HTTP/1.1
 Content-Type: application/json
  
-{"id_beca":"3","id_matricula":"8", "es_activo":false, "fecha_inicio":"2024-02-15"}
+{"id_beca":"5","id_matricula":"12", "es_activo":false, "fecha_inicio":"2024-02-15"}
+
+###
+PATCH  http://localhost:8000/academico/becado/4/ HTTP/1.1
+Content-Type: application/json
+
+{"es_activo": false, "fecha_fin": null}
 
 #------ testeo clientes ------
 
