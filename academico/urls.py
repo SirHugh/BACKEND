@@ -27,8 +27,9 @@ urlpatterns = [
     path('cliente/', ClienteListCreateView.as_view()),
     path('cliente/<int:pk>/', ClienteDetailView.as_view()),
     # responsable endpoints
-    path('responsable/', views.responsable_list),
-    path('responsable/<int:pk>/', views.responsable_detail),
+    path('responsable/', views.ResponsableListCreateView.as_view()),
+    path('responsable/<int:pk>/', views.ResponsableDetailView.as_view()),
+    path('responsable/find/', views.ResponsableVerifyView.as_view()),
 ]
 
 # urlpatterns = format_suffix_patterns(urlpatterns)

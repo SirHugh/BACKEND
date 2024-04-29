@@ -32,7 +32,7 @@ Content-Type: application/json
 
 
 
-# ---testeo de alumnos---
+# --------------------------------------------testeo de alumnos-----------------------------------------
    
 ###
 POST    http://localhost:8000/academico/alumnos/ HTTP/1.1
@@ -56,7 +56,7 @@ Content-Type: application/json
                 "genero":"F"}  
 
 ###
-GET    http://localhost:8000/academico/alumnos/?search=7009000 HTTP/1.1
+GET    http://localhost:8000/academico/alumnos/?search=&cedula=33333&page= HTTP/1.1
 Content-Type: application/json
 
 ###
@@ -99,15 +99,16 @@ Content-Type: application/json
 {"id_alumno":"2", "id_grado":"1", "anio_lectivo":"2024", "fecha_inscripcion":"2024-02-05"}
 
 ### 
-patch http://localhost:8000/academico/matricula/1/ HTTP/1.1
+patch http://localhost:8000/academico/matricula/13/ HTTP/1.1
 Content-Type: application/json
 
 { "es_activo":true}
 
 ### 
-get http://localhost:8000/academico/matricula/?es_activo=&search=8549&page=1 HTTP/1.1
+get http://localhost:8000/academico/matricula/?search=33333&anio_lectivo=2024&es_activo=true&page= HTTP/1.1
 Content-Type: application/json
 
+search=33333&anio_lectivo=2024&es_activo=true&page=
 
 #------------------------------------------------------- testeo becas ---------------------------------
 
@@ -161,51 +162,56 @@ Content-Type: application/json
 
 {"es_activo": false, "fecha_fin": null}
 
-#------ testeo clientes ------
+#------------------------------------------ testeo clientes --------------------------------------------
 
 ###
-post http://localhost:8000/academico/cliente/ HTTP/1.1
+put http://localhost:8000/academico/cliente/1/ HTTP/1.1
 Content-Type: application/json
  
 {"cedula":"555",
 "ruc":"454-5",
-"nombre":"Hugo Quintero",
+"nombre":"Hugo Alberto",
 "apellido":"Quintero Aquino",
 "telefono":"5258",
 "email":"hugo@home.com",
 "direccion":"ypane-central",
 "tipo":"F"}
+
 ###
 post http://localhost:8000/academico/cliente/ HTTP/1.1
 Content-Type: application/json
  
-{"cedula":"598457",
+{"cedula":"888",
 "ruc":"",
-"nombre":"Nelson",
-"apellido":"Perex",
+"nombre":"Carlos",
+"apellido":"Lacost",
 "telefono":"5124512",
-"email":"nelson@home.com",
-"direccion":"ypane-central",
+"email":"carlosl@home.com",
+"direccion":"central",
 "tipo":"F"}
 
 ###
-GET  http://localhost:8000/academico/cliente/ HTTP/1.1
+GET  http://localhost:8000/academico/cliente/1 HTTP/1.1
 Content-Type: application/json
 
 #--------------------testeo responsables ----------------------
 ###
-post  http://localhost:8000/academico/responsable/ HTTP/1.1
+put http://localhost:8000/academico/responsable/23/ HTTP/1.1
 Content-Type: application/json
 
 {
 "cliente":"2",
-"alumno":"20",
+"alumno":"19",
 "ocupacion":"Profesora",
 "tipo_relacion":"Madre",
-"es_activo":"True"}
+"es_activo":true}
 
 ### 
 get  http://localhost:8000/academico/responsable/ HTTP/1.1
+Content-Type: application/json
+
+###  
+get  http://localhost:8000/academico/responsable/find/?id_cliente=1&id_alumno=19 HTTP/1.1
 Content-Type: application/json
 
 ###
@@ -230,7 +236,7 @@ Content-Type: application/json
   }
 
 
-#alumno search
+#-------------------------------alumno search------------------
 
 ### 
 

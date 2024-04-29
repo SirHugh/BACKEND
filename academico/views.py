@@ -12,6 +12,14 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 import math 
 
+class OptionalPagination(PageNumberPagination):
+    
+    def paginate_queryset(self, queryset, request, view=None):
+        page = request.query_params.get('page') 
+        if page:
+            return super().paginate_queryset(queryset, request, view=view)
+        return None
+ 
 
 # vista de alumnos.
 
@@ -250,20 +258,6 @@ def becado_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
-
-class ClienteListCreateView(generics.ListCreateAPIView):
-    queryset = Cliente.objects.all()
-    serializer_class = ClienteSerializer
-
-class ClienteDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Cliente.objects.all()
-    serializer_class = ClienteSerializer
-
-class ClienteListCreateView(generics.ListCreateAPIView):
-    queryset = Cliente.objects.all()
-    serializer_class = ClienteSerializer
-
-
 #-------------------vistas de la clase responsable---------------------------
     
 @api_view(['GET', 'POST'])
@@ -326,12 +320,13 @@ class AlumnoListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-    pagination_class = PageNumberPagination
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['=cedula', '^nombre', '^apellido']
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['cedula']
+    search_fields = ['^cedula', '^nombre', '^apellido']
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
+        if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return AlumnoInputSerializer
         return AlumnoOutputSerializer  
 
@@ -341,25 +336,18 @@ class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Alumno.objects.all()
     serializer_class = AlumnoInputSerializer
 
-class OptionalPagination(PageNumberPagination):
-    
-    def paginate_queryset(self, queryset, request, view=None):
-        page = request.query_params.get('page') 
-        if page:
-            return super().paginate_queryset(queryset, request, view=view)
-        return None
- 
+
 #------------------------------Vistas de Matriculas-------------------------------
 class MatriculaListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
-    queryset = Matricula.objects.all().order_by('id_alumno__apellido')
+    queryset = Matricula.objects.all().order_by('-fecha_inscripcion' )
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo']
+    filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo', 'id_alumno__cedula']
     search_fields = ['^id_alumno__apellido', 'id_alumno__nombre','=id_alumno__cedula','^id_grado__grado',  ]
 
     def get_serializer_class(self):
-        if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
+        if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return MatriculaInputSerializer
         return MatriculaOutputSerializer 
      
@@ -402,3 +390,45 @@ class BecadoDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'POST'or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return BecadoInputSerializer
         return BecadoOutputSerializer 
+    
+#------------------vistas de clientes----------------------------------
+class ClienteListCreateView(generics.ListCreateAPIView):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer 
+    pagination_class = OptionalPagination 
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['cedula']
+
+class ClienteDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer
+
+#-------------Vistas de Responsables----------------------------------
+class ResponsableListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Responsable.objects.all() 
+    pagination_class = None
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    search_fields = ['^cliente__cedula', '^cliente__nombre', '^cliente__apellido']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return ResponsableInputSerializer
+        return ResponsableOutputSerializer  
+
+class ResponsableVerifyView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Responsable.objects.all() 
+    serializer_class = ResponsableInputSerializer
+    pagination_class = None
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['id_cliente', 'id_alumno']
+
+class ResponsableDetailView(generics.RetrieveUpdateDestroyAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Responsable.objects.all() 
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
+            return ResponsableInputSerializer
+        return ResponsableOutputSerializer 
