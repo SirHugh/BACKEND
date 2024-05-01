@@ -2,21 +2,33 @@ POST http://localhost:8000/login HTTP/1.1
 Content-Type: application/json
 
 {'username': '', 'password':''}
+###
+
+POST http://localhost:8000/auth/users/ HTTP/1.1
+Content-Type: application/json
+ 
+{"user": {"email":"lola@home.py","password":"loll7777","nombre": "LOL", "apellido":"LOPEZ" },
+"group": {"id": "3"}}
 
 ###
 
-POST http://localhost:8000/auth/signup HTTP/1.1
+Put   http://localhost:8000/auth/users/15/ HTTP/1.1
 Content-Type: application/json
  
-{"email":"hugo@home.py","password":"hugo7777","nombre": "hugo", "apellido":"quintero" }
+{"user": {"email":"jondan@home.py","password":"jordan7777","nombre": "JORDAN", "apellido":"QUINTERO AQUINO" },
+"group": {"id": "1"}}
+###
 
-
-### 
-
-GET http://localhost:8000/test_token HTTP/1.1
+get http://localhost:8000/auth/users/15/ HTTP/1.1
 Content-Type: application/json
 
- {}
+### 
+GET http://localhost:8000/auth/users HTTP/1.1
+Content-Type: application/json
+
+### 
+GET http://localhost:8000/auth/groups/ HTTP/1.1
+Content-Type: application/json
 
 ###
 POST http://localhost:8000/auth/token/ HTTP/1.1

@@ -8,20 +8,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-urlpatterns = [
-    path('', views.getRoutes),
+urlpatterns = [  
     path("docs/", include_docs_urls(title="Auth API")), 
     
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('qr-code/', views.QRCodeView.as_view(), name='qr-code-generate'),
     
-    path('users/', views.UsersListCreateView.as_view() ),
-    
-    re_path('login', views.login),
-    re_path('signup', views.signup),
-    re_path('test_token', views.test_token),
-
-
+    path('users/', views.UsersListCreateView.as_view() ), 
+    path('users/<int:pk>/', views.UserDetailView.as_view() ), 
+    path('groups/', views.GroupDetailView.as_view() ), 
 ]
 

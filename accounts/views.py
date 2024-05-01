@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .serializer import UserSerializer
+from .serializer import UserSerializer, UserOutputSerializer, GroupSerializer
 from rest_framework import status, generics, filters
 from .models import User
 
@@ -26,39 +26,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # ...
 
         return token
-
-@api_view(['GET'])
-def getRoutes(request):
-    routes = [  
-        '/auth/token',
-        '/auth/token/refresh',
-    ]
-    return Response(routes)
-
-@api_view(['POST'])
-def login(request):
     
-    return Response({})
-
-@api_view(['POST'])
-def signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        user = User.objects.get(email=request.data['email'])
-        user.set_password(request.data['password'])
-        user.save()
-        response = {'Usuario Creado Exitosamente!'}
-        return Response(data=user, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-def test_token(request):
-    name= 'hugo soy yo'
-    return Response({name})
-
-
-
 class QRCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -81,6 +49,58 @@ class UsersListCreateView(generics.ListCreateAPIView):
     serializer_class = UserSerializer 
     pagination_class = None
 
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserOutputSerializer
+        else:
+            return self.serializer_class
 
+    def create(self, request, *args, **kwargs):
+        user_data = request.data.get("user")
+        group_id = request.data.get("group").get("id") 
+        serializer = self.get_serializer(data=user_data)
+        serializer.is_valid(raise_exception=True)
 
- 
+        user = serializer.save() 
+        user.set_password(user_data['password'])
+        user.save()
+        group_id = request.data.get('group').get('id')
+        if group_id:
+            group = Group.objects.get(id=group_id)
+            user.groups.add(group)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer 
+    pagination_class = None
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserOutputSerializer
+        else:
+            return self.serializer_class
+        
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        user_data = request.data.get("user")
+        group_id = request.data.get("group").get("id") 
+        serializer = self.get_serializer(user, data=user_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_update(serializer) 
+        user.set_password(user_data['password'])
+        user.save()
+        group_id = request.data.get('group').get('id')
+        if group_id:
+            group = Group.objects.get(id=group_id)
+            user.groups.clear()
+            user.groups.add(group) 
+        return Response(serializer.data, status=status.HTTP_201_CREATED )
+
+class GroupDetailView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer 
+    pagination_class = None
