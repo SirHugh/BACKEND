@@ -13,13 +13,16 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import Group
+from django.utils import timezone
 import json
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
+        
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
         # Add custom claims
         token['nombre'] = user.nombre
         token['groups'] = [group.name for group in user.groups.all()]
@@ -45,7 +48,7 @@ class QRCodeView(APIView):
  
 class UsersListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by("-is_active")
     serializer_class = UserSerializer 
     pagination_class = None
 

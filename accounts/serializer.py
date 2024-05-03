@@ -24,11 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
         if user_id:
             if User.objects.exclude(id=user_id).filter(email=attrs['email']).exists():
                 raise ValidationError('El correo ya se encuentra en uso!')
-                
         elif User.objects.filter(email=attrs['email']).exists():
             raise ValidationError('El correo ya se encuentra en uso!')
-
-
+        
         return super().validate(attrs)
 
 

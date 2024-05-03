@@ -12,10 +12,10 @@ Content-Type: application/json
 
 ###
 
-Put   http://localhost:8000/auth/users/15/ HTTP/1.1
+PATCH   http://localhost:8000/auth/users/1/ HTTP/1.1
 Content-Type: application/json
  
-{"user": {"email":"jondan@home.py","password":"jordan7777","nombre": "JORDAN", "apellido":"QUINTERO AQUINO" },
+{"user": {"email":"hugo@home.py","nombre": "HUGO", "apellido":"QUINTERO" },
 "group": {"id": "1"}}
 ###
 
@@ -28,7 +28,7 @@ Content-Type: application/json
 
 ### 
 GET http://localhost:8000/auth/groups/ HTTP/1.1
-Content-Type: application/json
+Content-Type: application/json 
 
 ###
 POST http://localhost:8000/auth/token/ HTTP/1.1
