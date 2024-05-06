@@ -59,19 +59,17 @@ class UsersListCreateView(generics.ListCreateAPIView):
             return self.serializer_class
 
     def create(self, request, *args, **kwargs):
-        user_data = request.data.get("user")
-        group_id = request.data.get("group").get("id") 
+        user_data = request.data.get("user") 
         serializer = self.get_serializer(data=user_data)
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save() 
         user.set_password(user_data['password'])
         user.save()
-        group_id = request.data.get('group').get('id')
-        if group_id:
-            group = Group.objects.get(id=group_id)
-            user.groups.add(group)
-
+        groups_data = request.data.pop('groups')
+        for group_data in groups_data: 
+            group = Group.objects.get(id=group_data)
+            user.groups.add(group)  
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -88,19 +86,20 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         
     def update(self, request, *args, **kwargs):
         user = self.get_object()
-        user_data = request.data.get("user")
-        group_id = request.data.get("group").get("id") 
+        user_data = request.data.get("user") 
         serializer = self.get_serializer(user, data=user_data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         self.perform_update(serializer) 
-        user.set_password(user_data['password'])
-        user.save()
-        group_id = request.data.get('group').get('id')
-        if group_id:
-            group = Group.objects.get(id=group_id)
-            user.groups.clear()
-            user.groups.add(group) 
+        if user_data.get('password'):
+            user.set_password(user_data['password'])
+            user.save() 
+        groups_data = request.data.pop('groups')
+        user.groups.clear()
+        if groups_data:
+            for group_data in groups_data: 
+                group = Group.objects.get(id=group_data)
+                user.groups.add(group) 
         return Response(serializer.data, status=status.HTTP_201_CREATED )
 
 class GroupDetailView(generics.ListAPIView):

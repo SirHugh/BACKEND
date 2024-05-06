@@ -49,11 +49,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     
     email = models.EmailField(max_length=254, unique= True) 
-    nombre = models.CharField(max_length=254, unique= True)
-    apellido = models.CharField(max_length=100)
-    cedula = models.IntegerField(null=True)
-    direccion = models.CharField(max_length=254)
-    telefono = models.CharField(max_length=20)
+    nombre = models.CharField(max_length=254)
+    apellido = models.CharField(max_length=100, null=True, blank=True)
+    cedula = models.IntegerField(null=True, blank=True)
+    direccion = models.CharField(max_length=254, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
     
     is_staff = models.BooleanField(default=True) # must needed, otherwise you won't be able to loginto django-admin.
     is_active = models.BooleanField(default=True) # must needed, otherwise you won't be able to loginto django-admin.

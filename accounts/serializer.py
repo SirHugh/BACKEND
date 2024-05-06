@@ -9,23 +9,18 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name']
 
-class UserSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(max_length=80)
-    nombre = serializers.CharField(max_length= 50)
-    password = serializers.CharField(min_length=8, write_only=True) 
+class UserSerializer(serializers.ModelSerializer): 
     
     class Meta(object):
         model = User 
-        fields = [ 'id', 'email', 'password', 'nombre', 'apellido', 'is_active']
+        fields = [ 'id', 'email', 'nombre', 'apellido', 'is_active']
     
     def validate(self, attrs):
         user_id = self.context['view'].kwargs['pk'] if 'pk' in self.context['view'].kwargs else None
         
-        if user_id:
-            if User.objects.exclude(id=user_id).filter(email=attrs['email']).exists():
+        if not user_id:
+            if  User.objects.filter(email=attrs['email']).exists():
                 raise ValidationError('El correo ya se encuentra en uso!')
-        elif User.objects.filter(email=attrs['email']).exists():
-            raise ValidationError('El correo ya se encuentra en uso!')
         
         return super().validate(attrs)
 
