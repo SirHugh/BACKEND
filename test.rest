@@ -7,16 +7,16 @@ Content-Type: application/json
 POST http://localhost:8000/auth/users/ HTTP/1.1
 Content-Type: application/json
  
-{"user": {"email":"lola@home.py","password":"loll7777","nombre": "LOL", "apellido":"LOPEZ" },
-"group": {"id": "3"}}
+{"user": {"email":"ronal@home.py","password":"ronal7777","nombre": "RONAL", "apellido":"FERRER" },
+"groups": [{"id": "1"}, {"id": "3"}]}
 
 ###
-
-PATCH   http://localhost:8000/auth/users/1/ HTTP/1.1
+  
+PATCH   http://localhost:8000/auth/users/20/ HTTP/1.1
 Content-Type: application/json
  
-{"user": {"email":"hugo@home.py","nombre": "HUGO", "apellido":"QUINTERO" },
-"group": {"id": "1"}}
+{"user": {"is_active": true},
+"groups": [ ]}
 ###
 
 get http://localhost:8000/auth/users/15/ HTTP/1.1
