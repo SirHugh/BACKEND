@@ -409,7 +409,7 @@ class ResponsableListCreateView(generics.ListCreateAPIView):
     queryset = Responsable.objects.all() 
     pagination_class = None
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
-    search_fields = ['^cliente__cedula', '^cliente__nombre', '^cliente__apellido']
+    search_fields = ['^id_cliente__cedula', '^id_cliente__nombre', '^id_cliente__apellido']
 
     def get_serializer_class(self):
         if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":

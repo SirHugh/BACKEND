@@ -65,7 +65,7 @@ class ResponsableInputSerializer(serializers.ModelSerializer):
         fields = '__all__' 
 
 class ResponsableOutputSerializer(serializers.ModelSerializer):
-    cliente = ClienteSerializer()
+    id_cliente = ClienteSerializer()
     class Meta:
         model = Responsable
         fields= '__all__'
