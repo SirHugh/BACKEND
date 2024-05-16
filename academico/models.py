@@ -28,6 +28,17 @@ class Alumno(models.Model):
     cantidad_hermanos = models.IntegerField(blank=True, null=True)
     fotocarnet = models.ImageField(upload_to=upload_to, blank=True, null=True)
 
+    def get_nombre(self):
+            return self.nombre
+        
+    def get_apellido(self):
+        return self.apellido 
+    
+    def __str__(self):
+         return f"{self.cedula} - {self.nombre} {self.apellido}"
+    
+    def get_alumno(self):
+        return f"{self.nombre} {self.apellido}"
 
     class Meta:
         ordering = ['apellido']

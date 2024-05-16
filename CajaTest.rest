@@ -1,0 +1,16 @@
+# -------------- produstos enpoints tests ------------------
+###
+GET http://localhost:8000/caja/producto/1 HTTP/1.1
+Content-Type: application/json
+
+###
+POST http://localhost:8000/caja/producto/ HTTP/1.1
+Content-Type: application/json
+{
+    "nombre": "Product Name",
+    "descripcion": "Product Description",
+    "tipo": "food",
+    "es_activo": true,
+    "stock": 10,
+    "precio": 10.99
+}
