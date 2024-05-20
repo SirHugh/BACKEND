@@ -57,7 +57,7 @@ class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
 #------------------------------Vistas de Matriculas-------------------------------
 class MatriculaListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
-    queryset = Matricula.objects.all().order_by('-fecha_inscripcion' )
+    queryset = Matricula.objects.all().order_by('es_activo','-fecha_inscripcion' )
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo', 'id_alumno__cedula']

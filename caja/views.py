@@ -52,6 +52,7 @@ class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
 class ArancelListCreateView(generics.ListCreateAPIView):
     queryset = Arancel.objects.all()
     serializer_class = ArancelInputSerializer
+    pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     search_fields = ['=id_matricula__id_alumno__cedula', '^id_matricula__id_alumno__nombre', '^id_matricula__id_alumno__apellido']
     filterset_fields = ['es_activo', 'id_comprobante']
@@ -82,7 +83,15 @@ class ArancelDetailView(generics.RetrieveUpdateAPIView):
                 return ArancelOutputSerializer
             else:
                 return self.serializer_class
+            
+    # def update(self, request, *args, **kwargs):
+    #         partial = kwargs.pop('partial', False)
+    #         instance = self.get_object()
+    #         serializer = self.get_serializer(instance, data=request.data, many=True, partial=partial)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_update(serializer)
 
+    #         return Response(serializer.data)
 
 
 
