@@ -3,6 +3,10 @@ from academico import views
 from .views import GradoDetailView, becadoListCreateView, BecadoDetailView, ClienteDetailView, ClienteListCreateView, AlumnoListCreateView, AlumnoDetailView
 
 urlpatterns = [
+    # Periodo endpoints
+    path('periodo/', views.PeriodoListCreateView.as_view()),
+    path('periodo/<int:pk>/', views.PeriodoDetailView.as_view()),
+
     # alumnos endpoints
     path('alumnos/', AlumnoListCreateView.as_view(), name='alumnos'),
     path('alumnos/<int:pk>/', AlumnoDetailView.as_view()),

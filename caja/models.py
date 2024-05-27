@@ -22,7 +22,7 @@ class Producto(models.Model):
     stock = models.IntegerField(null=True, blank=True)
     precio = models.IntegerField(null=True, blank=True)
     grados = models.ManyToManyField(Grado, related_name='productos')
-    es_mensual = models.BooleanField(null=True, blank=True)
+    es_mensual = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.nombre

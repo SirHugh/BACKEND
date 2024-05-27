@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable
+from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable, Periodo
 
 class AlumnoInputSerializer(serializers.ModelSerializer):
     fotocarnet = serializers.ImageField(required=False)
@@ -37,7 +37,7 @@ class MatriculaOutputSerializer(serializers.ModelSerializer):
     id_grado=GradoNameSerializer()
     class Meta:
         model = Matricula
-        fields = ['id_matricula', 'id_alumno', 'id_grado' , 'anio_lectivo', 'fecha_inscripcion', 'trabaja', 'es_interno', 'es_activo']
+        fields = ['id_matricula', 'id_alumno', 'id_grado' , 'anio_lectivo', "fecha_desmatriculacion", 'fecha_inscripcion', 'trabaja', 'es_interno', 'es_activo']
 
 class BecaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,3 +69,8 @@ class ResponsableOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Responsable
         fields= '__all__'
+
+class PeriodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
+        fields = '__all__'

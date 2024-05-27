@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes, permission_classes 
 from rest_framework.response import Response
-from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable
-from .serializer import AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoInputSerializer, BecadoOutputSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
+from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable, Periodo
+from .serializer import AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, PeriodoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoInputSerializer, BecadoOutputSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
@@ -48,7 +48,7 @@ class AlumnoListCreateView(generics.ListCreateAPIView):
         return AlumnoOutputSerializer  
 
 
-class AlumnoDetailView(generics.RetrieveUpdateDestroyAPIView):
+class AlumnoDetailView(generics.RetrieveUpdateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Alumno.objects.all()
     serializer_class = AlumnoInputSerializer
@@ -68,7 +68,7 @@ class MatriculaListCreateView(generics.ListCreateAPIView):
             return MatriculaInputSerializer
         return MatriculaOutputSerializer 
      
-class MatriculaDetailView(generics.RetrieveUpdateDestroyAPIView):
+class MatriculaDetailView(generics.RetrieveUpdateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all()
 
@@ -83,7 +83,7 @@ class BecaListCreateView(generics.ListCreateAPIView):
     serializer_class = BecaSerializer
     pagination_class = None
 
-class BecaDetailView(generics.RetrieveUpdateDestroyAPIView):
+class BecaDetailView(generics.RetrieveUpdateAPIView):
     queryset = Beca.objects.all()
     serializer_class = BecaSerializer
 
@@ -101,7 +101,7 @@ class becadoListCreateView(generics.ListCreateAPIView):
             return BecadoInputSerializer
         return BecadoOutputSerializer 
 
-class BecadoDetailView(generics.RetrieveUpdateDestroyAPIView):
+class BecadoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Becado.objects.all()
         
     def get_serializer_class(self):
@@ -133,7 +133,7 @@ class ClienteListCreateView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['cedula']
 
-class ClienteDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ClienteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
@@ -158,7 +158,7 @@ class ResponsableVerifyView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['id_cliente', 'id_alumno']
 
-class ResponsableDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ResponsableDetailView(generics.RetrieveUpdateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Responsable.objects.all() 
 
@@ -166,3 +166,16 @@ class ResponsableDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return ResponsableInputSerializer
         return ResponsableOutputSerializer 
+
+#--------------------------------Periodo Views ---------------------------
+
+class PeriodoListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Periodo.objects.all() 
+    pagination_class = None
+    serializer_class = PeriodoSerializer
+    filter_backends = [DjangoFilterBackend] 
+    filterset_fields = ['es_activo']
+class PeriodoDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer

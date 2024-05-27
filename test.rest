@@ -116,10 +116,10 @@ Content-Type: application/json
 { "es_activo":true}
 
 ### 
-get http://localhost:8000/academico/matricula/?search=33333&anio_lectivo=2024&es_activo=true&page= HTTP/1.1
+get http://localhost:8000/academico/matricula/?search=&anio_lectivo=2024&es_activo=true&page= HTTP/1.1
 Content-Type: application/json
 
-search=33333&anio_lectivo=2024&es_activo=true&page=
+
 
 #------------------------------------------------------- testeo becas ---------------------------------
 

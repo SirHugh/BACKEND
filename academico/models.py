@@ -56,10 +56,31 @@ class Grado(models.Model):
     class Meta: 
         ordering = ['grado' ]
 
+class Periodo(models.Model):
+    id_periodo = models.AutoField(primary_key=True)
+    periodo = models.IntegerField(null=False, unique=True)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    vencimiento_pagos = models.IntegerField()
+    es_activo = models.BooleanField(default=False)
+
+    # def save(self, *args, **kwargs):
+    #     if self.es_activo:
+    #         try:
+    #             Period.objects.exclude(pk=self.pk).get(es_activo=True)
+    #         except Period.DoesNotExist:
+    #             super(Period, self).save(*args, **kwargs)
+    #             return
+    #         else:
+    #             raise IntegrityError("Solo un periodo puede encontrarse activo al mismo tiempo")
+    #     else:
+    #         super(Period, self).save(*args, **kwargs)
+
 class Matricula(models.Model):
     id_matricula = models.AutoField(primary_key=True)
     id_alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=True, blank = False)
     id_grado = models.ForeignKey(Grado, on_delete=models.CASCADE,null=True, blank = False)
+    # id_periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE)
     fecha_inscripcion = models.DateField(blank=False, null=True)
     anio_lectivo = models.IntegerField(null=True)
     es_activo  = models.BooleanField(default=False)
@@ -84,7 +105,6 @@ class Becado(models.Model):
     class Meta:
         unique_together = (('id_beca', 'id_matricula' ),)
 
-
 class Cliente(models.Model):
     id_cliente = models.AutoField(primary_key=True)
     cedula = models.IntegerField(unique=True)
@@ -105,3 +125,5 @@ class Responsable(models.Model):
     es_activo = models.BooleanField(null=True)
     class Meta:
         unique_together = ['id_cliente', 'id_alumno']
+
+
