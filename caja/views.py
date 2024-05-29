@@ -6,6 +6,7 @@ from .serializer import ComprobanteSerializer, ReciboSerializer, ProductoSeriali
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
+from django.db.models import Q
 
 # ------------------------- vistas de productos -----------------------------.
 class ProductoListCreateView(generics.ListCreateAPIView):
@@ -50,12 +51,12 @@ class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
 
 # ------------------------- vistas de arancel -----------------------------.
 class ArancelListCreateView(generics.ListCreateAPIView):
-    queryset = Arancel.objects.all()
+    queryset = Arancel.objects.all().order_by('fecha_vencimiento')
     serializer_class = ArancelInputSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     search_fields = ['=id_matricula__id_alumno__cedula', '^id_matricula__id_alumno__nombre', '^id_matricula__id_alumno__apellido']
-    filterset_fields = ['es_activo', 'id_comprobante']
+    filterset_fields = ['es_activo', 'id_comprobante', 'id_matricula']
      
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -72,6 +73,13 @@ class ArancelListCreateView(generics.ListCreateAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_queryset(self):
+        month = self.request.query_params.get('month', None)
+        if month is not None:
+            queryset =  self.queryset.filter(Q(fecha_vencimiento__month=month) | Q(fecha_vencimiento__month__lt=month))
+            return queryset
+        return self.queryset
 
 
 class ArancelDetailView(generics.RetrieveUpdateAPIView):
