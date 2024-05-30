@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Factura, Comprobante, Recibo
-from .serializer import ComprobanteSerializer, ReciboSerializer, ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, FacturaSerializer
+from .models import Producto, Arancel, Timbrado, Comprobante 
+from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer 
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
@@ -31,15 +31,7 @@ class TimbradoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Timbrado.objects.all()
     serializer_class = TimbradoSerializer
     
-# ------------------------- vistas de Factura -----------------------------.
-class FacturaListCreateView(generics.ListCreateAPIView):
-    queryset = Factura.objects.all()
-    serializer_class = FacturaSerializer
-
-class FacturaDetailView(generics.RetrieveUpdateAPIView):
-    queryset = Factura.objects.all()
-    serializer_class = FacturaSerializer
-
+ 
 # ------------------------- vistas de Comprobante -----------------------------.
 class ComprobanteListCreateView(generics.ListCreateAPIView):
     queryset = Comprobante.objects.all()

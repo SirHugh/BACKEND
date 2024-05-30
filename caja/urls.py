@@ -7,12 +7,8 @@ urlpatterns = [
     # timbrado endpoints
     path('timbrado/', views.TimbradoListCreateView.as_view()),
     path('timbrado/<int:pk>/', views.TimbradoDetailView.as_view()),
-
-    # factura endpoints
-    path('factura/', views.FacturaListCreateView.as_view()), 
-    path('factura/<int:pk>', views.FacturaDetailView.as_view()),
-
-    # factura endpoints
+ 
+    # Comprobante endpoints
     path('comprobante/', views.ComprobanteListCreateView.as_view()), 
     path('comprobante/<int:pk>', views.ComprobanteDetailView.as_view()),
     

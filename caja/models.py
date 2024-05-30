@@ -31,13 +31,6 @@ class Producto(models.Model):
 # ------------------------------------ Comprobantes Models ---------------------------- 
 #   
 
-class Comprobante(models.Model):
-    id_comprobante = models.AutoField(primary_key=True)
-    id_user = models.ForeignKey(User,  on_delete=models.CASCADE)
-    id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    fecha = models.DateField(auto_now=False, auto_now_add=False)
-    tipo_pago = models.CharField( max_length=50)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
     
 class Timbrado(models.Model):
     id_timbrado = models.AutoField(primary_key=True)
@@ -48,20 +41,19 @@ class Timbrado(models.Model):
     numero_inicial = models.IntegerField()
     numero_final = models.IntegerField(null=True, blank=True)
 
-class Factura(models.Model):
-    id_factura = models.AutoField(primary_key=True)
-    id_timbrado = models.ForeignKey(Timbrado, on_delete=models.CASCADE)
-    nro_factura = models.IntegerField()
-    id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE, null=True, blank=True)
-        
     def __str__(self):
         return self.nro_factura
 
-class Recibo(models.Model):
-    id_recibo = models.AutoField(primary_key=True)
-    nro_recibo = models.IntegerField()
-    id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE)
-
+class Comprobante(models.Model):
+    id_comprobante = models.AutoField(primary_key=True)
+    id_timbrado = models.ForeignKey(Timbrado, on_delete=models.CASCADE, null=True, blank=True)
+    nro_factura = models.IntegerField(null=True, blank=True)
+    id_user = models.ForeignKey(User,  on_delete=models.CASCADE)
+    id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha = models.DateField(auto_now=False, auto_now_add=False)
+    tipo_pago = models.CharField( max_length=50)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+     
 #
 # ------------------------------------ Arancel Pagos Models ---------------------------- 
 #

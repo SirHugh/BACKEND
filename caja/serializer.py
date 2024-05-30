@@ -1,20 +1,10 @@
 from rest_framework import serializers
-from .models import Factura, Arancel, Timbrado, Producto, Comprobante, Recibo
+from .models import   Arancel, Timbrado, Producto, Comprobante 
 from academico.models import Alumno, Matricula 
 
 class TimbradoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Timbrado
-        fields = '__all__'
-
-class FacturaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Factura
-        fields = '__all__'
-
-class ReciboSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recibo
         fields = '__all__'
 
 class ComprobanteSerializer(serializers.ModelSerializer):
