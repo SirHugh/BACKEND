@@ -38,11 +38,12 @@ class Timbrado(models.Model):
     fecha_desde = models.DateField(auto_now=False, auto_now_add=False)
     fecha_hasta = models.DateField(auto_now=False, auto_now_add=False)
     es_activo = models.BooleanField()
+    establecimiento =models.IntegerField(default=1)
+    punto_expedicion=models.IntegerField(default=1)
     numero_inicial = models.IntegerField()
     numero_final = models.IntegerField(null=True, blank=True)
+    ultimo_numero = models.IntegerField(null=True, blank=True, default=0)
 
-    def __str__(self):
-        return self.nro_factura
 
 class Comprobante(models.Model):
     id_comprobante = models.AutoField(primary_key=True)

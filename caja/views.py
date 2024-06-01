@@ -24,13 +24,28 @@ class ProductoDetailView(generics.RetrieveUpdateAPIView):
 
 # ------------------------- vistas de Timbrado -----------------------------.
 class TimbradoListCreateView(generics.ListCreateAPIView):
-    queryset = Timbrado.objects.all()
+    queryset = Timbrado.objects.all().order_by('-es_activo')
     serializer_class = TimbradoSerializer
 
 class TimbradoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Timbrado.objects.all()
     serializer_class = TimbradoSerializer
-    
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        if Timbrado.objects.filter(es_activo=True).exclude(pk=instance.pk).exists():
+            return Response({'error': 'Solo un timbrado puede estar activo a la vez'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not instance.es_activo and serializer.validated_data['es_activo']:
+            instance.es_activo = True
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        return super().update(request, *args, **kwargs)
  
 # ------------------------- vistas de Comprobante -----------------------------.
 class ComprobanteListCreateView(generics.ListCreateAPIView):
