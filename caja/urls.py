@@ -1,8 +1,6 @@
 from django.urls import path
 from . import views
-
-
-
+ 
 urlpatterns = [
     # timbrado endpoints
     path('timbrado/', views.TimbradoListCreateView.as_view()),

@@ -37,7 +37,7 @@ class TimbradoDetailView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
 
         if Timbrado.objects.filter(es_activo=True).exclude(pk=instance.pk).exists():
-            return Response({'error': 'Solo un timbrado puede estar activo a la vez'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Ya existe un timbrado activo'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not instance.es_activo and serializer.validated_data['es_activo']:
             instance.es_activo = True

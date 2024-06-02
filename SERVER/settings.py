@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     ##intall apps
     'accounts',  
     'academico',
-    'caja',  
+    'caja',    
+    'basics',
 ]
 
 MIDDLEWARE = [
