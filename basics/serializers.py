@@ -5,8 +5,13 @@ class OrganizationSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(required=False)
     class Meta:
         model = Organization
-        fields = '__all__'
+        fields = ['id', 'nombre', 'ruc', 'direccion', 'telefono','email','website','logo']
 
+    def get_photo_url(self, Organization):
+        request = self.context.get('request')
+        photo_url = Organization.photo.url
+        return request.build_absolute_uri(photo_url)
+    
     def create(self, validated_data):
         if Organization.objects.exists():
             organization = Organization.objects.get()
@@ -16,8 +21,3 @@ class OrganizationSerializer(serializers.ModelSerializer):
             return organization
         else:
             return super().create(validated_data)
-    
-    def get_photo_url(self, Organization):
-        request = self.context.get('request')
-        photo_url = Organization.photo.url
-        return request.build_absolute_uri(photo_url)

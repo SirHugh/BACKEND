@@ -1,7 +1,7 @@
 from django.db import models
 
 def upload_to(instance, filename):
-    return 'Fotocarnets/{filename}'.format(filename=filename)
+    return 'Logo/{filename}'.format(filename=filename)
 
 class Organization(models.Model):
     nombre = models.CharField(max_length=255)

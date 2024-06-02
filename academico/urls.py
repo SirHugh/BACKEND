@@ -37,5 +37,3 @@ urlpatterns = [
     path('responsable/<int:pk>/', views.ResponsableDetailView.as_view()),
     path('responsable/find/', views.ResponsableVerifyView.as_view()),
 ]
-
-# urlpatterns = format_suffix_patterns(urlpatterns)
