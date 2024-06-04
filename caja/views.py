@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Comprobante 
+from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta
 from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer 
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,6 +26,9 @@ class ProductoDetailView(generics.RetrieveUpdateAPIView):
 class TimbradoListCreateView(generics.ListCreateAPIView):
     queryset = Timbrado.objects.all().order_by('-es_activo')
     serializer_class = TimbradoSerializer
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    filterset_fields = ['es_activo']
 
 class TimbradoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Timbrado.objects.all()
@@ -51,6 +54,53 @@ class TimbradoDetailView(generics.RetrieveUpdateAPIView):
 class ComprobanteListCreateView(generics.ListCreateAPIView):
     queryset = Comprobante.objects.all()
     serializer_class = ComprobanteSerializer
+
+    def create(self, request, *args, **kwargs):
+        comprobante = request.data.get('comprobante')
+        serializer = self.get_serializer(data=comprobante)
+        serializer.is_valid(raise_exception=True)
+        id_timbrado = comprobante.get('id_timbrado');
+
+        if id_timbrado: 
+            timbrado = Timbrado.objects.get(pk=id_timbrado)
+            if not timbrado.es_activo:
+                return Response({'error': 'El timbrado no esta activo'}, status=status.HTTP_400_BAD_REQUEST) 
+            if timbrado.ultimo_numero == 0:
+                serializer.validated_data['nro_factura'] = timbrado.ultimo_numero = timbrado.numero_inicial
+            else:
+                serializer.validated_data['nro_factura'] = timbrado.ultimo_numero = timbrado.ultimo_numero + 1
+            timbrado.save()
+
+        aranceles = request.data.get('aranceles',[])
+        pagoventas = request.data.get('pagoventas',[])
+        actividades = request.data.get('actividades', []) 
+
+        if not aranceles and not pagoventas and not actividades:
+            return Response({'error':'No se encontradon pagos'}, status=status.HTTP_404_NOT_FOUND)
+        
+        invoice = serializer.save()
+        if aranceles:
+            for arancel in aranceles:
+                payment = Arancel.objects.get(pk=arancel)
+                payment.id_comprobante = invoice 
+                payment.es_activo = False
+                payment.save()
+        
+        if pagoventas:
+            for pago in pagoventas:
+                payment = PagoVenta.objects.get(pk=pago)
+                payment.id_comprobante = invoice 
+                payment.es_activo = False
+                payment.save()
+        
+        if actividades:
+            for pago in actividades:
+                payment = Arancel.objects.get(pk=arancel)
+                # payment.id_comprobante = invoice 
+                # payment.es_activo = False
+                # payment.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Comprobante.objects.all()

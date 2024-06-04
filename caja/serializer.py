@@ -28,7 +28,7 @@ class ArancelOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Arancel
-        fields = ["id_arancel", "alumno", "nombre", "fecha_vencimiento", "nro_cuota", "monto", "es_activo"]
+        fields = ["id_arancel", "id_comprobante", "alumno", "nombre", "fecha_vencimiento", "nro_cuota", "monto", "es_activo"]
 
     def get_alumno(self, obj):
         try:
