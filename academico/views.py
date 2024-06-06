@@ -141,7 +141,7 @@ class ClienteDetailView(generics.RetrieveUpdateAPIView):
 class ResponsableListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Responsable.objects.all() 
-    pagination_class = None
+    pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     search_fields = ['^id_cliente__cedula', '^id_cliente__nombre', '^id_cliente__apellido']
 
