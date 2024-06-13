@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta
-from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializar, DetalleVentaSerializar, PagoVentaInputSerializar 
+from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
+from . import serializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
@@ -174,11 +175,16 @@ class ArancelDetailView(generics.RetrieveUpdateAPIView):
 
 class VentaListCreateView(generics.ListCreateAPIView):
     queryset = Venta.objects.all()
-    serializer_class = VentaInputSerializar
+    serializer_class = VentaInputSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
-    search_fields = [ ]
-    filterset_fields = [ ]
+    search_fields = ['^id_matricula__id_alumno__cedula', '^id_matricula__id_alumno__nombre', '^id_matricula__id_alumno__apellido']
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.VentaOutputSerializer
+        else:
+            return self.serializer_class
 
     def create(self, request, *args, **kwargs):
          
@@ -190,7 +196,7 @@ class VentaListCreateView(generics.ListCreateAPIView):
         if not detalleList:
             return Response({'error':'No se encontro detalle de venta'}, status=status.HTTP_404_NOT_FOUND)
         for detalle in detalleList:
-            detalleSerializer =  DetalleVentaSerializar(data=detalle);
+            detalleSerializer =  DetalleVentaSerializer(data=detalle);
             detalleSerializer.is_valid(raise_exception=True)
             producto = Producto.objects.get(pk=detalle['id_producto']);
             cantidad = detalle['cantidad']
@@ -201,13 +207,13 @@ class VentaListCreateView(generics.ListCreateAPIView):
         if not pagosList:
             return Response({'error':'No se encontro pagos de venta'}, status=status.HTTP_404_NOT_FOUND)
         for pago in pagosList:
-            pagoSerializer =  PagoVentaInputSerializar(data=pago);
+            pagoSerializer =  PagoVentaInputSerializer(data=pago);
             pagoSerializer.is_valid(raise_exception=True)
 
         venta = ventaSerializer.save()
 
         for detalle in detalleList:
-            detalleSerializer =  DetalleVentaSerializar(data=detalle);
+            detalleSerializer =  DetalleVentaSerializer(data=detalle);
             detalleSerializer.is_valid(raise_exception=True)
             detalleSerializer.validated_data['id_venta'] = venta
             detalleSerializer.validated_data['id_producto'] = Producto.objects.get(pk=detalle['id_producto'])
@@ -218,7 +224,7 @@ class VentaListCreateView(generics.ListCreateAPIView):
             producto.save()
         
         for pago in pagosList:
-            pagoSerializer =  PagoVentaInputSerializar(data=pago);
+            pagoSerializer =  PagoVentaInputSerializer(data=pago);
             pagoSerializer.is_valid(raise_exception=True)
             pagoSerializer.validated_data['id_venta'] = venta  
             pagoSerializer.save()

@@ -44,17 +44,57 @@ class ArancelOutputSerializer(serializers.ModelSerializer):
         except Producto.DoesNotExist:
             return None
 
-class VentaInputSerializar(serializers.ModelSerializer):
+class VentaInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Venta
         fields = '__all__'
 
-class DetalleVentaSerializar(serializers.ModelSerializer):
-     class Meta:
-         model= DetalleVenta
-         fields = ['id_producto', 'cantidad', 'precio']
-
-class PagoVentaInputSerializar(serializers.ModelSerializer):
+class PagoVentaInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = PagoVenta
         fields = ['fecha_vencimiento', 'nro_pago', 'monto', 'es_activo']
+
+class DetalleVentaSerializer(serializers.ModelSerializer):
+    producto = serializers.SerializerMethodField()
+
+    class Meta:
+         model= DetalleVenta
+         fields = ['producto', 'cantidad', 'precio']
+    def get_producto(self, obj):
+        try:
+            producto = obj.id_producto.__str__()
+            return producto
+        except Producto.DoesNotExist:
+            return None
+    
+
+class VentaOutputSerializer(serializers.ModelSerializer):
+    alumno = serializers.SerializerMethodField()
+    detalle = serializers.SerializerMethodField()
+    pagos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Venta
+        fields = ["id_venta", "id_matricula", 
+                  "alumno", "fecha", "monto", "detalle", "pagos"]
+
+    def get_alumno(self, obj):
+        try:
+            alumno = obj.id_matricula.id_alumno.__str__()
+            return alumno
+        except Alumno.DoesNotExist:
+            return None
+    
+    def get_detalle(self, obj):
+        try:
+            detalle = DetalleVenta.objects.filter(id_venta=obj.id_venta) 
+            return DetalleVentaSerializer(detalle, many=True).data
+        except DetalleVenta.DoesNotExist:
+            return None
+    
+    def get_pagos(self, obj):
+        try:
+            pagos = PagoVenta.objects.filter(id_venta=obj.id_venta) 
+            return PagoVentaInputSerializer(pagos, many=True).data
+        except PagoVenta.DoesNotExist:
+            return None
