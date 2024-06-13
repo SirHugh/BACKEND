@@ -1,28 +1,32 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta
-from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer 
+from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta
+from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializar, DetalleVentaSerializar, PagoVentaInputSerializar 
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
 from django.db.models import Q
+# ---------------------------------------------
+# ---------vistas de productos-----------------
+# ---------------------------------------------
 
-# ------------------------- vistas de productos -----------------------------.
 class ProductoListCreateView(generics.ListCreateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
-    search_fields = ['^nombre']
+    search_fields = ['^nombre','^descripcion']
     filterset_fields = ['tipo', 'grados']
 
 class ProductoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
 
+# ---------------------------------------------
+# ---------vistas de Timbrado------------------
+# ---------------------------------------------
 
-# ------------------------- vistas de Timbrado -----------------------------.
 class TimbradoListCreateView(generics.ListCreateAPIView):
     queryset = Timbrado.objects.all().order_by('-es_activo')
     serializer_class = TimbradoSerializer
@@ -50,7 +54,10 @@ class TimbradoDetailView(generics.RetrieveUpdateAPIView):
 
         return super().update(request, *args, **kwargs)
  
-# ------------------------- vistas de Comprobante -----------------------------.
+# ---------------------------------------------
+# ---------vistas de Comprobante--------------- 
+# ---------------------------------------------
+
 class ComprobanteListCreateView(generics.ListCreateAPIView):
     queryset = Comprobante.objects.all()
     serializer_class = ComprobanteSerializer
@@ -106,7 +113,10 @@ class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Comprobante.objects.all()
     serializer_class = ComprobanteSerializer
 
-# ------------------------- vistas de arancel -----------------------------.
+# ---------------------------------------------
+# ---------vistas de Arancel-------------------
+# ---------------------------------------------
+
 class ArancelListCreateView(generics.ListCreateAPIView):
     queryset = Arancel.objects.all().order_by('fecha_vencimiento')
     serializer_class = ArancelInputSerializer
@@ -158,5 +168,63 @@ class ArancelDetailView(generics.RetrieveUpdateAPIView):
 
     #         return Response(serializer.data)
 
+# ---------------------------------------------
+# -----------vistas de Ventas------------------
+# ---------------------------------------------
 
+class VentaListCreateView(generics.ListCreateAPIView):
+    queryset = Venta.objects.all()
+    serializer_class = VentaInputSerializar
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    search_fields = [ ]
+    filterset_fields = [ ]
 
+    def create(self, request, *args, **kwargs):
+         
+        venta = request.data.get('venta')
+        ventaSerializer = self.get_serializer(data=venta)
+        ventaSerializer.is_valid(raise_exception=True)
+
+        detalleList = request.data.get('detalle', [])
+        if not detalleList:
+            return Response({'error':'No se encontro detalle de venta'}, status=status.HTTP_404_NOT_FOUND)
+        for detalle in detalleList:
+            detalleSerializer =  DetalleVentaSerializar(data=detalle);
+            detalleSerializer.is_valid(raise_exception=True)
+            producto = Producto.objects.get(pk=detalle['id_producto']);
+            cantidad = detalle['cantidad']
+            if producto.stock < cantidad:
+                return Response({'error':'No hay suficiente stock para la venta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        pagosList = request.data.get('pagos', [])
+        if not pagosList:
+            return Response({'error':'No se encontro pagos de venta'}, status=status.HTTP_404_NOT_FOUND)
+        for pago in pagosList:
+            pagoSerializer =  PagoVentaInputSerializar(data=pago);
+            pagoSerializer.is_valid(raise_exception=True)
+
+        venta = ventaSerializer.save()
+
+        for detalle in detalleList:
+            detalleSerializer =  DetalleVentaSerializar(data=detalle);
+            detalleSerializer.is_valid(raise_exception=True)
+            detalleSerializer.validated_data['id_venta'] = venta
+            detalleSerializer.validated_data['id_producto'] = Producto.objects.get(pk=detalle['id_producto'])
+            detalleSerializer.validated_data['precio'] = Producto.objects.get(pk=detalle['id_producto']).precio
+            detalleSerializer.save()
+            producto = Producto.objects.get(pk=detalle['id_producto']);
+            producto.stock = producto.stock - detalle['cantidad']
+            producto.save()
+        
+        for pago in pagosList:
+            pagoSerializer =  PagoVentaInputSerializar(data=pago);
+            pagoSerializer.is_valid(raise_exception=True)
+            pagoSerializer.validated_data['id_venta'] = venta  
+            pagoSerializer.save()
+        
+        return Response(ventaSerializer.data, status=status.HTTP_201_CREATED)
+
+class VentaDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Producto.objects.all()
+    serializer_class = ProductoSerializer

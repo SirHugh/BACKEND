@@ -17,4 +17,8 @@ urlpatterns = [
     # arancel endpoints
     path('arancel/', views.ArancelListCreateView.as_view() ),
     path('arancel/<int:pk>', views.ArancelDetailView.as_view()),
+
+    # Venta endpoints
+    path('venta/', views.VentaListCreateView.as_view() ),
+    path('venta/<int:pk>', views.VentaDetailView.as_view()),
 ]

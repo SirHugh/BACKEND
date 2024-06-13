@@ -18,10 +18,11 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=254, null=True, blank=True)
     tipo = models.CharField(max_length=2, choices=TIPO_PRODUCTO)
+    iva = models.IntegerField(default=0)
     es_activo = models.BooleanField()
     stock = models.IntegerField(null=True, blank=True)
     precio = models.IntegerField(null=True, blank=True)
-    grados = models.ManyToManyField(Grado, related_name='productos')
+    grados = models.ManyToManyField(Grado, related_name='productos', blank=True)
     es_mensual = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -74,8 +75,10 @@ class Arancel(models.Model):
 #
 # ------------------------------------ Ventas Models ---------------------------- 
 #
+
 class Venta(models.Model):
     id_venta = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     id_matricula = models.ForeignKey(Matricula, on_delete=models.CASCADE)
     nro_pagos = models.IntegerField()
     fecha = models.DateField()
@@ -85,12 +88,12 @@ class DetalleVenta(models.Model):
     id_detalleVenta = models.AutoField(primary_key=True)
     id_venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
     cantidad = models.IntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
 
 class PagoVenta(models.Model):
     id_pago = models.AutoField(primary_key=True)
-    id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE)
+    id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE, null=True)
     id_venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     fecha_vencimiento = models.DateField()
     nro_pago = models.IntegerField()

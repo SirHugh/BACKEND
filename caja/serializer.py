@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import   Arancel, Timbrado, Producto, Comprobante 
+from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta
 from academico.models import Alumno, Matricula 
 
 class TimbradoSerializer(serializers.ModelSerializer):
@@ -44,3 +44,17 @@ class ArancelOutputSerializer(serializers.ModelSerializer):
         except Producto.DoesNotExist:
             return None
 
+class VentaInputSerializar(serializers.ModelSerializer):
+    class Meta:
+        model = Venta
+        fields = '__all__'
+
+class DetalleVentaSerializar(serializers.ModelSerializer):
+     class Meta:
+         model= DetalleVenta
+         fields = ['id_producto', 'cantidad', 'precio']
+
+class PagoVentaInputSerializar(serializers.ModelSerializer):
+    class Meta:
+        model = PagoVenta
+        fields = ['fecha_vencimiento', 'nro_pago', 'monto', 'es_activo']
