@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta
-from .serializer import ComprobanteSerializer,  ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
+from .serializer import   ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -61,7 +61,16 @@ class TimbradoDetailView(generics.RetrieveUpdateAPIView):
 
 class ComprobanteListCreateView(generics.ListCreateAPIView):
     queryset = Comprobante.objects.all()
-    serializer_class = ComprobanteSerializer
+    serializer_class = serializer.ComprobanteInputSerializer
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    search_fields = ['^id_cliente__nombre','^id_cliente__apellido', 'id_cliente__cedula','id_cliente__ruc']
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.ComprobanteOutputSerializer
+        else:
+            return self.serializer_class
 
     def create(self, request, *args, **kwargs):
         comprobante = request.data.get('comprobante')
@@ -112,7 +121,13 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
 
 class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Comprobante.objects.all()
-    serializer_class = ComprobanteSerializer
+    serializer_class = serializer.ComprobanteInputSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.ComprobanteOutputSerializer
+        else:
+            return self.serializer_class
 
 # ---------------------------------------------
 # ---------vistas de Arancel-------------------
@@ -232,5 +247,11 @@ class VentaListCreateView(generics.ListCreateAPIView):
         return Response(ventaSerializer.data, status=status.HTTP_201_CREATED)
 
 class VentaDetailView(generics.RetrieveUpdateAPIView):
-    queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
+    queryset = Venta.objects.all()
+    serializer_class = VentaInputSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.VentaOutputSerializer
+        else:
+            return self.serializer_class

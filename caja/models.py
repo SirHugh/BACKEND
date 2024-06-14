@@ -55,6 +55,9 @@ class Comprobante(models.Model):
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     tipo_pago = models.CharField( max_length=50)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ['-fecha']
      
 #
 # ------------------------------------ Arancel Pagos Models ---------------------------- 

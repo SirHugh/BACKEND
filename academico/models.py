@@ -116,6 +116,9 @@ class Cliente(models.Model):
     direccion = models.CharField(max_length=254, blank=True)
     tipo = models.CharField(max_length=10)
 
+    def __str__(self):
+         return f"{self.cedula} - {self.nombre} {self.apellido}"
+
 class Responsable(models.Model):
     id_responsable = models.AutoField(primary_key=True)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
