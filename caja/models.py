@@ -14,7 +14,6 @@ class Producto(models.Model):
     ]
     
     id_producto = models.AutoField(primary_key=True)
-    # id_grado = models.ManyToManyField(Grado, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=254, null=True, blank=True)
     tipo = models.CharField(max_length=2, choices=TIPO_PRODUCTO)

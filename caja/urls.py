@@ -21,4 +21,9 @@ urlpatterns = [
     # Venta endpoints
     path('venta/', views.VentaListCreateView.as_view() ),
     path('venta/<int:pk>', views.VentaDetailView.as_view()),
+
+    # PagoVenta endpoints
+    path('venta/pago/', views.PagoVentaListView.as_view() ),
+    path('venta/pago/<int:pk>', views.PagoVentaDetailView.as_view()),
+
 ]

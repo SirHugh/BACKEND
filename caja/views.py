@@ -18,7 +18,7 @@ class ProductoListCreateView(generics.ListCreateAPIView):
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     search_fields = ['^nombre','^descripcion']
-    filterset_fields = ['tipo', 'grados']
+    filterset_fields = ['tipo', 'grados','es_activo']
 
 class ProductoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Producto.objects.all()
@@ -148,9 +148,7 @@ class ArancelListCreateView(generics.ListCreateAPIView):
             return self.serializer_class
 
     def create(self, request, *args, **kwargs):
-        """
-        Override create method to handle list of payments
-        """
+        
         serializer = self.serializer_class(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
@@ -255,3 +253,28 @@ class VentaDetailView(generics.RetrieveUpdateAPIView):
             return serializer.VentaOutputSerializer
         else:
             return self.serializer_class
+        
+
+# ---------------------------------------------
+# -----------vistas de Pagos por Ventas------------------
+# ---------------------------------------------
+
+class PagoVentaListView(generics.ListAPIView):
+    queryset = PagoVenta.objects.all()
+    serializer_class = serializer.PagoVentaOutputSerializer
+    pagination_class = OptionalPagination
+
+    def get_queryset(self):
+        matricula = self.request.query_params.get('matricula', None)
+        month = self.request.query_params.get('mes', None)
+        activo = self.request.query_params.get('activo', None).lower() == 'true'
+        
+        if month is not None:
+            queryset =  self.queryset.filter(Q(fecha_vencimiento__month=month) | Q(fecha_vencimiento__month__lt=month), id_venta__id_matricula=matricula, es_activo=activo)
+            return queryset        
+        queryset = self.queryset.filter(id_venta__id_matricula=matricula, es_activo=activo)
+        return queryset
+
+class PagoVentaDetailView(generics.RetrieveUpdateAPIView):
+    queryset = PagoVenta.objects.all()
+    serializer_class = serializer.PagoVentaOutputSerializer

@@ -17,7 +17,8 @@ urlpatterns = [
     
     # matriculas endpoints
     path('matricula/', views.MatriculaListCreateView.as_view()),
-    path('matricula/<int:pk>/', views.MatriculaDetailView.as_view()), 
+    path('matricula/<int:pk>/', views.MatriculaDetailView.as_view()),
+    path('matricula/responsable/<int:pk>/', views.ResponsalbeMatriculaListView.as_view()),
     
     # beca endpoints
     path('beca/', views.BecaListCreateView.as_view()),

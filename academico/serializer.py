@@ -48,6 +48,7 @@ class BecadoInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Becado
         fields = '__all__'
+        
 class BecadoOutputSerializer(serializers.ModelSerializer):
     id_matricula = MatriculaOutputSerializer()
     class Meta:

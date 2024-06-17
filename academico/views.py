@@ -53,7 +53,6 @@ class AlumnoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Alumno.objects.all()
     serializer_class = AlumnoInputSerializer
 
-
 #------------------------------Vistas de Matriculas-------------------------------
 class MatriculaListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
@@ -67,7 +66,17 @@ class MatriculaListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
             return MatriculaInputSerializer
         return MatriculaOutputSerializer 
+
+class ResponsalbeMatriculaListView(generics.ListAPIView):
+    # permission_classes = (IsAuthenticated,)
+    serializer_class = MatriculaOutputSerializer
+    pagination_class = None  
      
+    def get_queryset(self):
+        responsable_intances = Responsable.objects.filter(id_cliente=self.kwargs['pk'])
+        queryset = Matricula.objects.filter(id_alumno__in=responsable_intances.values_list('id_alumno', flat=True), es_activo=True)
+        return queryset
+
 class MatriculaDetailView(generics.RetrieveUpdateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Matricula.objects.all()

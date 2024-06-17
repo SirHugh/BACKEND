@@ -51,10 +51,12 @@ class PagoVentaInputSerializer(serializers.ModelSerializer):
 
 class PagoVentaOutputSerializer(serializers.ModelSerializer):
     alumno = serializers.SerializerMethodField()
+    descripcion = serializers.SerializerMethodField()
+    nroPagos = serializers.SerializerMethodField()
 
     class Meta:
         model = PagoVenta
-        fields = ['id_pago','id_venta', 'alumno', 'fecha_vencimiento', 'nro_pago', 'monto', 'es_activo']
+        fields = ['id_pago','id_venta', 'nroPagos', 'descripcion', 'alumno', 'fecha_vencimiento', 'nro_pago', 'monto', 'es_activo']
 
     def get_alumno(self, obj):
         try:
@@ -63,7 +65,20 @@ class PagoVentaOutputSerializer(serializers.ModelSerializer):
         except Alumno.DoesNotExist:
             return None
     
-
+    def get_descripcion(self, obj):
+        try:
+            detalle = DetalleVenta.objects.filter(id_venta=obj.id_venta) 
+            return DetalleVentaSerializer(detalle, many=True).data
+        except DetalleVenta.DoesNotExist:
+            return None
+        
+    def get_nroPagos(self, obj):
+        try:
+            nroPagos = PagoVenta.objects.filter(id_venta=obj.id_venta).count()
+            return nroPagos
+        except Venta.DoesNotExist:
+            return None
+                
 class DetalleVentaSerializer(serializers.ModelSerializer):
     producto = serializers.SerializerMethodField()
 

@@ -88,12 +88,19 @@ class Matricula(models.Model):
     trabaja = models.BooleanField(blank=True, null=True)
     es_interno = models.BooleanField(blank=True, null=True)
 
+# from caja import Producto
 class Beca(models.Model):
+    TIPO_OPTIONS = [
+        (1, 'PORCENTAJE'),
+        (2, 'MONTO FIJO'),
+    ]
+
     id_beca = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=254)
     monto = models.IntegerField(default=0)
-    porcentaje = models.IntegerField(default=0)
+    tipo_monto = models.IntegerField(choices=TIPO_OPTIONS, default=0)    
+    arancel = models.ManyToManyField('caja.Producto',  related_name='beca', default=0)
     es_activo = models.BooleanField()
 
 class Becado(models.Model):
@@ -121,8 +128,8 @@ class Cliente(models.Model):
 
 class Responsable(models.Model):
     id_responsable = models.AutoField(primary_key=True)
-    id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    id_alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+    id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE )
+    id_alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE )
     ocupacion = models.CharField(max_length=254, blank=True)
     tipo_relacion = models.CharField(max_length=50)
     es_activo = models.BooleanField(null=True)
