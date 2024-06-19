@@ -26,4 +26,11 @@ urlpatterns = [
     path('venta/pago/', views.PagoVentaListView.as_view() ),
     path('venta/pago/<int:pk>', views.PagoVentaDetailView.as_view()),
 
+    # Compra endpoints
+    path('compra/', views.CompraListCreateView.as_view() ),
+    path('compra/<int:pk>', views.CompraDetailView.as_view()),
+
+    # Compra endpoints
+    path('flujo_caja/', views.FlujoCajaListCreateView.as_view() ),
+    path('flujo_caja/<int:pk>', views.FlujoCajaDetailView.as_view()),
 ]

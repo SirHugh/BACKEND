@@ -64,6 +64,9 @@ class Periodo(models.Model):
     vencimiento_pagos = models.IntegerField()
     es_activo = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-periodo']
+        
     # def save(self, *args, **kwargs):
     #     if self.es_activo:
     #         try:

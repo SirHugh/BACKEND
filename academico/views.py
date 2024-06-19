@@ -181,10 +181,28 @@ class ResponsableDetailView(generics.RetrieveUpdateAPIView):
 class PeriodoListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = Periodo.objects.all() 
-    pagination_class = None
+    pagination_class = OptionalPagination
     serializer_class = PeriodoSerializer
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['es_activo']
+
+
 class PeriodoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Periodo.objects.all()
     serializer_class = PeriodoSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        if Periodo.objects.filter(es_activo=True).exclude(pk=instance.pk).exists():
+            return Response({'error': 'Ya existe un periodo activo'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not instance.es_activo and serializer.validated_data['es_activo']:
+            instance.es_activo = True
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        return super().update(request, *args, **kwargs)

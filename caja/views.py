@@ -1,10 +1,11 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta
+from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja
 from .serializer import   ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework import filters
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
 from django.db.models import Q
@@ -171,17 +172,8 @@ class ArancelDetailView(generics.RetrieveUpdateAPIView):
             if self.request.method == 'GET':
                 return ArancelOutputSerializer
             else:
-                return self.serializer_class
+                return self.serializer_class 
             
-    # def update(self, request, *args, **kwargs):
-    #         partial = kwargs.pop('partial', False)
-    #         instance = self.get_object()
-    #         serializer = self.get_serializer(instance, data=request.data, many=True, partial=partial)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_update(serializer)
-
-    #         return Response(serializer.data)
-
 # ---------------------------------------------
 # -----------vistas de Ventas------------------
 # ---------------------------------------------
@@ -278,3 +270,132 @@ class PagoVentaListView(generics.ListAPIView):
 class PagoVentaDetailView(generics.RetrieveUpdateAPIView):
     queryset = PagoVenta.objects.all()
     serializer_class = serializer.PagoVentaOutputSerializer
+
+# ---------------------------------------------
+# -----------vistas de Compras------------------
+# ---------------------------------------------
+
+class CompraListCreateView(generics.ListCreateAPIView):
+    queryset = Compra.objects.all()
+    serializer_class = serializer.CompraInputSerializer
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    search_fields = []
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.CompraOutputSerializer
+        else:
+            return self.serializer_class
+
+    def create(self, request, *args, **kwargs):
+         
+        compra = request.data.get('compra')
+        compraSerializer = self.get_serializer(data=compra)
+        compraSerializer.is_valid(raise_exception=True)
+
+        detalleList = request.data.get('detalle', [])
+
+        if not detalleList:
+            return Response({'error':'No se encontro detalle de compra'}, status=status.HTTP_404_NOT_FOUND)
+        for detalle in detalleList:
+            detalleSerializer =  serializer.DetalleCompraInputSerializer(data=detalle);
+            detalleSerializer.is_valid(raise_exception=True)
+            producto = Producto.objects.get(pk=detalle['id_producto']);
+            cantidad = detalle['cantidad']
+            if cantidad < 1:
+                return Response({'error':'Cantidad insuficiente'}, status=status.HTTP_400_BAD_REQUEST)
+
+        id_flujoCaja = compra['id_flujoCaja'] or None
+ 
+        if id_flujoCaja: 
+            flujoCaja = FlujoCaja.objects.get(pk=id_flujoCaja)
+            if flujoCaja.monto_cierre < compra['monto']:
+                return Response({'error':'No hay suficiente saldo en la caja'}, status=status.HTTP_412_PRECONDITION_FAILED)
+            else:
+                flujoCaja.monto_cierre -= compra['monto']
+                flujoCaja.save()
+                pass
+
+        compra = compraSerializer.save() 
+
+        for detalle in detalleList:
+            detalleSerializer =  serializer.DetalleCompraInputSerializer(data=detalle);
+            detalleSerializer.is_valid(raise_exception=True)
+            detalleSerializer.validated_data['id_compra'] = compra 
+            detalleSerializer.save()
+            producto = Producto.objects.get(pk=detalle['id_producto']);
+            producto.stock += detalle['cantidad']
+            producto.save()
+        
+        return Response(compraSerializer.data, status=status.HTTP_201_CREATED)
+
+class CompraDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Venta.objects.all()
+    serializer_class = VentaInputSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.VentaOutputSerializer
+        else:
+            return self.serializer_class
+
+
+# ---------------------------------------------
+# -----------vistas de Flujo de Caja------------------
+# ---------------------------------------------
+
+class FlujoCajaListCreateView(generics.ListCreateAPIView):
+    queryset = FlujoCaja.objects.all()
+    serializer_class = serializer.FlujoCajaOutputSerializer
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    search_fields = []
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.FlujoCajaOutputSerializer
+        else:
+            return serializer.FlujoCajaInputSerializer
+    
+    def get(self, request, *args, **kwargs):
+        current =  request.GET.get('current')
+        try:
+            if current:
+                obj = FlujoCaja.get_current()
+                print(obj)
+                if obj:
+                    serializer = self.serializer_class(obj)
+                    return Response(serializer.data)
+                else:
+                    return Response({'error': 'No hay flujo de caja actual'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return super().get(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+ 
+class FlujoCajaDetailView(generics.RetrieveUpdateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = FlujoCaja.objects.all()
+    serializer_class = serializer.FlujoCajaOutputSerializer
+            
+    def update(self, request, *args, **kwargs):
+        flujoCaja = self.get_object()
+        serializer = self.get_serializer(flujoCaja, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            serializer.save()
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return super().update(request, *  args, **kwargs)

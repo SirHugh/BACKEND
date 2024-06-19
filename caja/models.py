@@ -1,6 +1,11 @@
 from django.db import models
 from academico.models import Matricula, Cliente, Grado
 from accounts.models import User
+from django.utils import timezone
+import datetime
+from django.core.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework import status
 
 # Create your models here.
 #
@@ -28,9 +33,8 @@ class Producto(models.Model):
         return self.nombre
  
 #
-# ------------------------------------ Comprobantes Models ---------------------------- 
+# ------------------------------------ Timbrado Model ---------------------------- 
 #   
-
     
 class Timbrado(models.Model):
     id_timbrado = models.AutoField(primary_key=True)
@@ -44,14 +48,51 @@ class Timbrado(models.Model):
     numero_final = models.IntegerField(null=True, blank=True)
     ultimo_numero = models.IntegerField(null=True, blank=True, default=0)
 
+#
+# ------------------------------------ Flujo caja Model ---------------------------- 
+#   
+
+class FlujoCaja(models.Model):
+    id_flujoCaja = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    fecha = models.DateField(auto_now_add=True)
+    hora_apertura = models.TimeField(auto_now_add=True)
+    hora_cierre = models.TimeField(blank=True, null=True)
+    monto_apertura = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_cierre = models.DecimalField(max_digits=10, decimal_places=2)
+    es_activo = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+
+        # restringe la actualizacion del flujoCaja fuera del dia de creacion
+        if self.pk and self.fecha!= datetime.datetime.now().date():
+            raise ValidationError('No es posible modificar un flujo de caja anterior')
+
+        if not self.pk:  # solo en la creacion, no en el update<
+            if FlujoCaja.objects.filter(fecha=datetime.datetime.now().date()).exists():
+                raise ValidationError('Ya existe un flujo de caja para hoy')
+            self.monto_cierre = self.monto_apertura  
+
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_current(cls):
+        date = datetime.datetime.now().date()  
+        return cls.objects.filter(fecha=date, es_activo=True).first() 
+
+#
+# ------------------------------------ Comprobantes Model ---------------------------- 
+#   
 
 class Comprobante(models.Model):
     id_comprobante = models.AutoField(primary_key=True)
     id_timbrado = models.ForeignKey(Timbrado, on_delete=models.CASCADE, null=True, blank=True)
+    id_flujoCaja = models.ForeignKey(FlujoCaja, on_delete=models.CASCADE, null=True, blank=True)
     nro_factura = models.IntegerField(null=True, blank=True)
     id_user = models.ForeignKey(User,  on_delete=models.CASCADE)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateField(auto_now=False, auto_now_add=False)
+    hora = models.TimeField(auto_now_add=True, blank=True, null=True)
     tipo_pago = models.CharField( max_length=50)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -59,7 +100,7 @@ class Comprobante(models.Model):
         ordering = ['-fecha']
      
 #
-# ------------------------------------ Arancel Pagos Models ---------------------------- 
+# ------------------------------------ Arancel Pagos Model ---------------------------- 
 #
 class Arancel(models.Model):
     id_arancel = models.AutoField(primary_key=True)
@@ -75,7 +116,7 @@ class Arancel(models.Model):
         return self.id_producto.nombre
     
 #
-# ------------------------------------ Ventas Models ---------------------------- 
+# ------------------------------------ Ventas Model ---------------------------- 
 #
 
 class Venta(models.Model):
@@ -85,14 +126,22 @@ class Venta(models.Model):
     nro_pagos = models.IntegerField()
     fecha = models.DateField()
     monto = models.DecimalField(max_digits=10, decimal_places=2)
-
+ 
+#
+# ------------------------------------ Detalle Venta Model ---------------------------- 
+#   
+    
 class DetalleVenta(models.Model):
     id_detalleVenta = models.AutoField(primary_key=True)
     id_venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-
+ 
+#
+# ------------------------------------ Pago Venta Model ---------------------------- 
+#   
+    
 class PagoVenta(models.Model):
     id_pago = models.AutoField(primary_key=True)
     id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE, null=True)
@@ -101,3 +150,45 @@ class PagoVenta(models.Model):
     nro_pago = models.IntegerField()
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     es_activo = models.BooleanField()
+
+    
+#
+# ------------------------------------ Compra Model ---------------------------- 
+#   
+
+class Compra(models.Model):
+    id_compra = models.AutoField(primary_key=True)
+    id_flujoCaja = models.ForeignKey(FlujoCaja, on_delete=models.CASCADE, related_name="compra", null=True, blank=True)
+    fecha = models.DateField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    nro_factura = models.IntegerField()
+    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    hora = models.TimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        ordering = ['-fecha']
+    
+#
+# ------------------------------------ DetalleCompra Model ---------------------------- 
+#   
+
+class DetalleCompra(models.Model):
+    id_detalleCompra = models.AutoField(primary_key=True)
+    id_compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name="detalleCompra")
+    id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="detalleCompra")
+    cantidad = models.IntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+#
+# ------------------------------------ Extraccion Model ---------------------------- 
+#   
+
+class Extraccion(models.Model):
+    id_extraccion = models.AutoField(primary_key=True)
+    id_flujoCaja = models.ForeignKey(FlujoCaja, on_delete=models.CASCADE, related_name="extraccion")
+    fecha = models.DateField()
+    hora = models.TimeField(auto_now=False, auto_now_add=False)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    concepto = models.TextField()
+    nro_factura = models.IntegerField(blank=True, null=True)
