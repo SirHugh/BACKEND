@@ -78,7 +78,17 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=comprobante)
         serializer.is_valid(raise_exception=True)
         id_timbrado = comprobante.get('id_timbrado');
+        flujoCaja = FlujoCaja.get_current()
+        if flujoCaja is None:
+            return Response({'error': 'No hay un flujo de caja activo'}, status=status.HTTP_404_NOT_FOUND)
 
+        aranceles = request.data.get('aranceles',[])
+        pagoventas = request.data.get('pagoventas',[])
+        actividades = request.data.get('actividades', []) 
+
+        if not aranceles and not pagoventas and not actividades:
+            return Response({'error':'No se encontradon pagos'}, status=status.HTTP_404_NOT_FOUND)
+        
         if id_timbrado: 
             timbrado = Timbrado.objects.get(pk=id_timbrado)
             if not timbrado.es_activo:
@@ -89,14 +99,13 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
                 serializer.validated_data['nro_factura'] = timbrado.ultimo_numero = timbrado.ultimo_numero + 1
             timbrado.save()
 
-        aranceles = request.data.get('aranceles',[])
-        pagoventas = request.data.get('pagoventas',[])
-        actividades = request.data.get('actividades', []) 
-
-        if not aranceles and not pagoventas and not actividades:
-            return Response({'error':'No se encontradon pagos'}, status=status.HTTP_404_NOT_FOUND)
+        serializer.validated_data['id_flujoCaja'] = flujoCaja
+        flujoCaja.monto_cierre += comprobante['monto']
+        flujoCaja.entrada += comprobante['monto']
         
+        flujoCaja.save() 
         invoice = serializer.save()
+
         if aranceles:
             for arancel in aranceles:
                 payment = Arancel.objects.get(pk=arancel)
@@ -112,11 +121,12 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
                 payment.save()
         
         if actividades:
-            for pago in actividades:
-                payment = Arancel.objects.get(pk=arancel)
+            # for pago in actividades:
+                # payment = Arancel.objects.get(pk=arancel)
                 # payment.id_comprobante = invoice 
                 # payment.es_activo = False
                 # payment.save()
+            pass
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -312,8 +322,9 @@ class CompraListCreateView(generics.ListCreateAPIView):
             flujoCaja = FlujoCaja.objects.get(pk=id_flujoCaja)
             if flujoCaja.monto_cierre < compra['monto']:
                 return Response({'error':'No hay suficiente saldo en la caja'}, status=status.HTTP_412_PRECONDITION_FAILED)
-            else:
+            else:                
                 flujoCaja.monto_cierre -= compra['monto']
+                flujoCaja.salida += compra['monto']
                 flujoCaja.save()
                 pass
 
@@ -347,30 +358,28 @@ class CompraDetailView(generics.RetrieveUpdateAPIView):
 
 class FlujoCajaListCreateView(generics.ListCreateAPIView):
     queryset = FlujoCaja.objects.all()
-    serializer_class = serializer.FlujoCajaOutputSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
-    search_fields = []
+    filterset_fields = ['fecha']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return serializer.FlujoCajaOutputSerializer
+            return serializer.FlujoCajaNormalSerializer
         else:
             return serializer.FlujoCajaInputSerializer
     
     def get(self, request, *args, **kwargs):
         current =  request.GET.get('current')
-        try:
-            if current:
+        if current:
+            try:
                 obj = FlujoCaja.get_current()
-                print(obj)
                 if obj:
-                    serializer = self.serializer_class(obj)
+                    serializer = self.get_serializer(obj)
                     return Response(serializer.data)
                 else:
-                    return Response({'error': 'No hay flujo de caja actual'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return Response({'is_active': False,'error': 'No hay flujo de caja actual'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return super().get(request, *args, **kwargs)
 
@@ -399,3 +408,4 @@ class FlujoCajaDetailView(generics.RetrieveUpdateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return super().update(request, *  args, **kwargs)
+     

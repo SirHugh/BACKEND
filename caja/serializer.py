@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja
+from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion
 from academico.models import Alumno, Matricula, Cliente 
+from accounts.models import User
 
 class TimbradoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -193,17 +194,18 @@ class DetalleCompraOutputSerializer(serializers.ModelSerializer):
 
 class CompraInputSerializer(serializers.ModelSerializer):
     id_flujoCaja = serializers.PrimaryKeyRelatedField(queryset=FlujoCaja.objects.all(), required=False, allow_null=True)
+    tiempo_alta = serializers.DateTimeField(read_only=True, required=False)
 
     class Meta:
         model = Compra
-        fields = ['fecha', 'monto', 'nro_factura', 'id_flujoCaja', 'id_usuario']
+        fields = ['fecha', 'tiempo_alta', 'monto', 'nro_factura', 'id_flujoCaja', 'id_usuario']
 
 class CompraOutputSerializer(serializers.ModelSerializer):
     detalle = serializers.SerializerMethodField()
 
     class Meta:
         model = Compra
-        fields = ["id_compra", 'id_flujoCaja', 'fecha', 'hora', 'nro_factura', 'id_usuario', 'monto', 'detalle']
+        fields = ["id_compra", 'id_flujoCaja', 'fecha', 'tiempo_alta', 'nro_factura', 'id_usuario', 'monto', 'detalle']
 
     def get_detalle(self, obj):
         try:
@@ -211,6 +213,16 @@ class CompraOutputSerializer(serializers.ModelSerializer):
             return DetalleCompraOutputSerializer(detalle, many=True).data
         except DetalleCompra.DoesNotExist:
             return None
+# 
+# 
+# ----- Extracciones Serializers
+# 
+# 
+
+class ExtraccionInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Extraccion
+        fields = '__all__'
 
 # 
 # 
@@ -218,12 +230,47 @@ class CompraOutputSerializer(serializers.ModelSerializer):
 # 
 # 
 
-class FlujoCajaInputSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FlujoCaja
-        fields = ['id_usuario', 'monto_apertura',]
-
-class FlujoCajaOutputSerializer(serializers.ModelSerializer):
+class FlujoCajaNormalSerializer(serializers.ModelSerializer):
     class Meta:
         model = FlujoCaja
         fields = '__all__'
+
+class FlujoCajaInputSerializer(serializers.ModelSerializer): 
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=True, allow_null=True)
+    monto_apertura = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+
+    class Meta:
+        model = FlujoCaja
+        fields = ['id_usuario', 'monto_apertura']
+
+
+class FlujoCajaOutputSerializer(serializers.ModelSerializer):
+    facturas = serializers.SerializerMethodField()
+    compras = serializers.SerializerMethodField()
+    extracciones = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FlujoCaja
+        fields = [ 'id_flujoCaja', 'id_usuario', 'fecha', 'hora_apertura', 'hora_cierre', 'monto_apertura', 
+                  'monto_cierre', 'entrada', 'salida', 'es_activo', 'facturas', 'compras', 'extracciones']
+    
+    def get_compras(self, obj):
+        try:
+            compras = Compra.objects.filter(id_flujoCaja=obj.id_flujoCaja)
+            return CompraInputSerializer(compras, many=True).data
+        except Compra.DoesNotExist:
+            return None
+    
+    def get_facturas(self, obj):
+        try:
+            facturas = Comprobante.objects.filter(id_flujoCaja=obj.id_flujoCaja)
+            return ComprobanteInputSerializer(facturas, many=True).data
+        except Comprobante.DoesNotExist:
+            return None
+    
+    def get_extracciones(self, obj):
+        try:
+            extracciones = Extraccion.objects.filter(id_flujoCaja=obj.id_flujoCaja)
+            return ExtraccionInputSerializer(extracciones, many=True).data
+        except Extraccion.DoesNotExist:
+            return None

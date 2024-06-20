@@ -60,6 +60,8 @@ class FlujoCaja(models.Model):
     hora_cierre = models.TimeField(blank=True, null=True)
     monto_apertura = models.DecimalField(max_digits=10, decimal_places=2)
     monto_cierre = models.DecimalField(max_digits=10, decimal_places=2)
+    entrada = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    salida = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     es_activo = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
@@ -163,10 +165,10 @@ class Compra(models.Model):
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     nro_factura = models.IntegerField()
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    hora = models.TimeField(auto_now_add=True, blank=True, null=True)
+    tiempo_alta = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        ordering = ['-fecha']
+        ordering = ['-tiempo_alta']
     
 #
 # ------------------------------------ DetalleCompra Model ---------------------------- 
