@@ -198,7 +198,7 @@ class CompraInputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Compra
-        fields = ['fecha', 'tiempo_alta', 'monto', 'nro_factura', 'id_flujoCaja', 'id_usuario']
+        fields = ['id_compra','fecha', 'tiempo_alta', 'monto', 'nro_factura', 'id_flujoCaja', 'id_usuario']
 
 class CompraOutputSerializer(serializers.ModelSerializer):
     detalle = serializers.SerializerMethodField()

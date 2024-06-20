@@ -359,6 +359,7 @@ class CompraDetailView(generics.RetrieveUpdateAPIView):
 class FlujoCajaListCreateView(generics.ListCreateAPIView):
     queryset = FlujoCaja.objects.all()
     pagination_class = OptionalPagination
+    serializer_class = serializer.FlujoCajaOutputSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     filterset_fields = ['fecha']
 
@@ -369,18 +370,30 @@ class FlujoCajaListCreateView(generics.ListCreateAPIView):
             return serializer.FlujoCajaInputSerializer
     
     def get(self, request, *args, **kwargs):
-        current =  request.GET.get('current')
-        if current:
-            try:
-                obj = FlujoCaja.get_current()
-                if obj:
-                    serializer = self.get_serializer(obj)
-                    return Response(serializer.data)
-                else:
-                    return Response({'is_active': False,'error': 'No hay flujo de caja actual'}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+        current =  request.query_params.get('current', None)
+        if current is not None:
+            current = current.lower() == 'true'
+            if current:
+                try:
+                    obj = FlujoCaja.get_current()
+                    if obj:
+                        serializer = self.serializer_class(obj)
+                        return Response(serializer.data)
+                    else:
+                        return Response({'is_active': False,'error': 'No hay flujo de caja activo'}, status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                try:
+                    obj = FlujoCaja.get_current()
+                    if obj.es_activo == True:
+                        serializer = self.get_serializer(obj)
+                        return Response(serializer.data)
+                    else:
+                        return Response({'is_active': False,'error': 'No hay flujo de caja activo'}, status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
         return super().get(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
