@@ -414,7 +414,7 @@ class FlujoCajaDetailView(generics.RetrieveUpdateAPIView):
         flujoCaja = self.get_object()
         serializer = self.get_serializer(flujoCaja, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-
+        
         try:
             serializer.save()
         except Exception as e:
