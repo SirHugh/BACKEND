@@ -386,7 +386,7 @@ class FlujoCajaListCreateView(generics.ListCreateAPIView):
             else:
                 try:
                     obj = FlujoCaja.get_current()
-                    if obj.es_activo == True:
+                    if obj and obj.es_activo==True:
                         serializer = self.get_serializer(obj)
                         return Response(serializer.data)
                     else:
