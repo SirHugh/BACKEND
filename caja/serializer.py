@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion
-from academico.models import Alumno, Matricula, Cliente 
+from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
+from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
 from accounts.models import User
 
 class TimbradoSerializer(serializers.ModelSerializer):
@@ -133,11 +133,12 @@ class ComprobanteInputSerializer(serializers.ModelSerializer):
 class ComprobanteOutputSerializer(serializers.ModelSerializer):
     aranceles = serializers.SerializerMethodField()
     ventas = serializers.SerializerMethodField()
+    actividades =serializers.SerializerMethodField()
     cliente = serializers.SerializerMethodField()
 
     class Meta:
         model = Comprobante
-        fields = ['id_comprobante', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'monto', 'cliente', 'aranceles', 'ventas']
+        fields = ['id_comprobante', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'monto', 'cliente', 'aranceles', 'ventas', 'actividades']
 
     def get_cliente(self, obj):
         try:
@@ -160,6 +161,12 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
         except PagoVenta.DoesNotExist:
             return None
 
+    def get_actividades(self, obj):
+        try:
+            actividades = PagoActividad.objects.filter(id_comprobante=obj.id_comprobante)
+            return PagoActividadOutputSerializer(actividades, many=True).data
+        except PagoActividad.DoesNotExist:
+            return None
 # 
 # 
 # ----- Detalle Compra serializers
@@ -273,4 +280,119 @@ class FlujoCajaOutputSerializer(serializers.ModelSerializer):
             extracciones = Extraccion.objects.filter(id_flujoCaja=obj.id_flujoCaja)
             return ExtraccionInputSerializer(extracciones, many=True).data
         except Extraccion.DoesNotExist:
+            return None
+ 
+# 
+# 
+# ----- Actividades Serializers
+# 
+# 
+class TipoActividadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoActividad
+        fields = '__all__'
+        
+# 
+# 
+# ----- Actividades Serializers
+# 
+# 
+class ActividadInputSerializer(serializers.ModelSerializer):
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    id_periodo = serializers.PrimaryKeyRelatedField(queryset=Periodo.objects.all(), required=False, allow_null=True)
+    id_tipoActividad = serializers.PrimaryKeyRelatedField(queryset=TipoActividad.objects.all(), required=True, allow_null=False)
+    monto = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    es_activo = serializers.BooleanField(required=False)
+    
+    class Meta: 
+        model = Actividad
+        fields = ["id_tipoActividad", "id_usuario", "id_grado", "fecha", "monto", 'id_periodo', 'es_activo']
+
+class ActividadOutputDetailSerializer(serializers.ModelSerializer):
+    grado = serializers.SerializerMethodField()
+    actividad = serializers.SerializerMethodField()
+    pagos = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Actividad
+        fields = ['id_actividad', 'grado', 'fecha', 'monto', 'es_activo', 'actividad', 'pagos' ]
+
+    def get_grado(self, obj):
+        try:
+            grado = obj.id_grado.__str__()
+            return grado
+        except Grado.DoesNotExist:
+            return None
+    
+    def get_actividad(self, obj):
+        try:
+            tipoActividad = obj.id_tipoActividad.nombre
+            return tipoActividad
+        except TipoActividad.DoesNotExist:
+            return None
+        
+    def get_pagos(self, obj):
+        try:
+            pagos = PagoActividad.objects.filter(id_actividad=obj.id_actividad)
+            return PagoActividadOutputSerializer(pagos, many=True).data
+        except PagoActividad.DoesNotExist:
+            return None
+
+class ActividadOutputSerializer(serializers.ModelSerializer):
+    grado = serializers.SerializerMethodField()
+    actividad = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Actividad
+        fields = ['id_actividad', 'grado', 'fecha', 'monto', 'es_activo', 'actividad', ]
+        
+    def get_grado(self, obj):
+        try:
+            grado = obj.id_grado.__str__()
+            return grado
+        except Grado.DoesNotExist:
+            return None
+    
+    def get_actividad(self, obj):
+        try:
+            tipoActividad = obj.id_tipoActividad.nombre
+            return tipoActividad
+        except TipoActividad.DoesNotExist:
+            return None
+    
+# 
+# 
+# ----- Actividades Serializers
+# 
+# 
+class PagoActividadInputSerializer(serializers.ModelSerializer):
+    id_actividad = serializers.PrimaryKeyRelatedField(queryset=Actividad.objects.all(), required=True,)
+    id_matricula = serializers.PrimaryKeyRelatedField(queryset=Matricula.objects.all(), required=True,)
+    id_comprobante = serializers.PrimaryKeyRelatedField(queryset=Comprobante.objects.all(), required=False,)
+    monto = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    
+    class Meta:
+        model = PagoActividad
+        fields = ['id_actividad', 'id_matricula', 'id_comprobante', 'monto'] 
+
+class PagoActividadOutputSerializer(serializers.ModelSerializer):
+    actividad = serializers.SerializerMethodField()
+    alumno = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PagoActividad
+        fields = ['id_pagoActividad', 'actividad', 'alumno', 'monto', 'fecha_pago']
+        
+    def get_actividad(self, obj):
+        try:
+            actividad = obj.id_actividad.id_tipoActividad.nombre
+            return actividad
+        except PagoActividad.DoesNotExist:
+            return None
+    
+    def get_alumno(self, obj):
+        try:
+            alumno = obj.id_matricula.id_alumno.__str__()
+            return alumno
+        except PagoActividad.DoesNotExist:
             return None

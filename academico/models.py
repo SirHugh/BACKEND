@@ -55,6 +55,11 @@ class Grado(models.Model):
     
     class Meta: 
         ordering = ['grado' ]
+    
+    def __str__(self):
+        if not self.grado:
+            return f"{self.nombre}"
+        return f"{self.grado}° - {self.nombre}"
 
 class Periodo(models.Model):
     id_periodo = models.AutoField(primary_key=True)
@@ -66,6 +71,11 @@ class Periodo(models.Model):
 
     class Meta:
         ordering = ['-periodo']
+        
+    @classmethod
+    def get_current(cls): 
+        periodo = cls.objects.filter(es_activo=True).first()
+        return periodo
         
     # def save(self, *args, **kwargs):
     #     if self.es_activo:

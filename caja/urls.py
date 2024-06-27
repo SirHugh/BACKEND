@@ -30,7 +30,21 @@ urlpatterns = [
     path('compra/', views.CompraListCreateView.as_view() ),
     path('compra/<int:pk>', views.CompraDetailView.as_view()),
 
-    # Compra endpoints
+    # Flujo de Caja endpoints
     path('flujo_caja/', views.FlujoCajaListCreateView.as_view() ),
     path('flujo_caja/<int:pk>', views.FlujoCajaDetailView.as_view()),
+    
+    # Tipo Actividad endpoints
+    path('actividad/tipo/', views.TipoActividadListCreateView.as_view() ),
+    path('actividad/tipo/<int:pk>', views.TipoActividadDetailView.as_view()),
+    
+    # Actividad endpoints
+    path('actividad/', views.ActividadListCreateView.as_view() ),
+    path('actividad/<int:pk>', views.ActividadDetailView.as_view()),
+    
+    
+    # Pago Actividad endpoints
+    path('actividad/pago/', views.PagoActividadListView.as_view() ),
+    path('actividad/pago/<int:pk>', views.PagoActividadDetailView.as_view()),
+    path('actividad/pago/pendiente/', views.PendientePagoActividadView.as_view()),
 ]

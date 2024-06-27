@@ -121,12 +121,11 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
                 payment.save()
         
         if actividades:
-            # for pago in actividades:
-                # payment = Arancel.objects.get(pk=arancel)
-                # payment.id_comprobante = invoice 
-                # payment.es_activo = False
-                # payment.save()
-            pass
+            for pago in actividades:
+                serializer = PagoActividadInputSerializer(data=pago)
+                serializer.is_valid() 
+                serializer.validated_data['id_comprobante'] = invoice  
+                serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -421,4 +420,151 @@ class FlujoCajaDetailView(generics.RetrieveUpdateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return super().update(request, *  args, **kwargs)
-     
+
+# ---------------------------------------------
+# -----------vistas de Tipo Actividad-------------
+# ---------------------------------------------
+
+from .models import Actividad, TipoActividad, PagoActividad
+from .serializer import ActividadOutputDetailSerializer, ActividadInputSerializer, ActividadOutputSerializer, TipoActividadSerializer, PagoActividadInputSerializer, PagoActividadOutputSerializer
+from academico.models import Periodo, Matricula
+from django.db.models import Sum
+
+class TipoActividadListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = TipoActividad.objects.all()
+    pagination_class = OptionalPagination
+    serializer_class = TipoActividadSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]  
+    search_fields = ['nombre']
+
+class TipoActividadDetailView(generics.RetrieveUpdateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = TipoActividad.objects.all()
+    serializer_class = TipoActividadSerializer
+    
+# ---------------------------------------------
+# -----------vistas de actividades-------------
+# ---------------------------------------------
+
+class ActividadListCreateView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Actividad.objects.all()
+    pagination_class = OptionalPagination
+    # serializer_class = serializer.FlujoCajaOutputSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    filterset_fields = ['id_grado', 'id_periodo']
+    search_fields = ['id_tipoActividad__nombre']
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ActividadOutputSerializer
+        else:
+            return ActividadInputSerializer
+    
+    def get_queryset(self):
+        id_periodo = self.request.query_params.get('id_periodo', None)
+        if not id_periodo:
+            periodo = Periodo.get_current()
+            if not periodo:
+                return Actividad.objects.none()
+            queryset =  self.queryset.filter(id_periodo=periodo.id_periodo)
+            return queryset
+        return self.queryset
+    
+        
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        periodo = Periodo.get_current()
+        if not periodo:
+            return Response({"error": "No hay un período académico activo"}, status=status.HTTP_404_NOT_FOUND)
+        for dt in data:
+            serializer = self.get_serializer(data=dt)
+            serializer.is_valid(raise_exception=True)
+            dt['id_periodo']=periodo.id_periodo
+        serializerGroup = self.get_serializer(data=data, many=True)
+        if serializerGroup.is_valid():
+            serializerGroup.save()
+            return Response(serializerGroup.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ActividadDetailView(generics.RetrieveUpdateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Actividad.objects.all()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ActividadOutputDetailSerializer
+        else:
+            return ActividadInputSerializer
+    
+    # def update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_update(serializer)
+            
+# ---------------------------------------------
+# -----------vistas de Pago Actividades-------------
+# ---------------------------------------------
+
+class PendientePagoActividadView(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        id_matricula = self.request.query_params.get('id_matricula') or None
+        if id_matricula is None:
+            return Response({"error": "no se entro el parametro id_matricula"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            matricula = Matricula.objects.get(pk=id_matricula)
+        except:
+            return Response({"error": "No se encontro la matricula"}, status=status.HTTP_404_NOT_FOUND)
+        periodo = Periodo.get_current()
+        if periodo is None:
+            return Response({"error": "No hay un período académico activo"}, status=status.HTTP_404_NOT_FOUND)
+        actividades = Actividad.objects.filter(id_grado=matricula.id_grado, id_periodo=periodo.id_periodo, es_activo=True) 
+        if not actividades:
+            return Response({"error": "Sin pagos por realizar"}, status=status.HTTP_404_NOT_FOUND)
+        print(actividades)
+        pagosActividad = []
+        for actividad in actividades:
+            pago = {
+                'id_matricula': matricula.id_matricula,
+                'alumno': matricula.id_alumno.__str__(),
+                'id_actividad': actividad.id_actividad,
+                'actividad': actividad.id_tipoActividad.nombre,
+                'fecha': actividad.fecha,
+                'monto': 0
+            }
+            pagos = PagoActividad.objects.filter(id_actividad=actividad.id_actividad, id_matricula=id_matricula)
+            total_pagado = pagos.aggregate(total_pagado=Sum('monto'))['total_pagado'] or 0
+            monto = actividad.monto - total_pagado
+            if monto > 0:
+                pago['monto'] = monto
+                pagosActividad.append(pago)
+        return Response(pagosActividad) 
+    
+
+class PagoActividadListView(generics.ListCreateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = PagoActividad.objects.all()
+    pagination_class = OptionalPagination
+    # serializer_class = serializer.FlujoCajaOutputSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    filterset_fields = ['id_actividad', 'id_matricula']
+    search_fields = ['^id_actividad__id_tipoActividad__nombre']
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PagoActividadOutputSerializer
+        else:
+            return PagoActividadInputSerializer
+                                 
+class PagoActividadDetailView(generics.RetrieveUpdateAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = TipoActividad.objects.all()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PagoActividadOutputSerializer
+        else:
+            return PagoActividadInputSerializer
+

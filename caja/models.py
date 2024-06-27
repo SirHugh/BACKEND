@@ -202,3 +202,33 @@ class Extraccion(models.Model):
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     concepto = models.TextField()
     nro_factura = models.IntegerField(blank=True, null=True)
+
+class TipoActividad(models.Model):
+    id_tipoActividad = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=50)
+    descripcion = models.CharField(max_length=254)
+
+class Actividad(models.Model):
+    id_actividad = models.AutoField(primary_key=True)
+    id_tipoActividad = models.ForeignKey(TipoActividad, on_delete=models.CASCADE)
+    id_periodo = models.ForeignKey("academico.Periodo", on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    id_grado = models.ForeignKey("academico.Grado", on_delete=models.CASCADE)
+    fecha = models.DateField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    es_activo = models.BooleanField(default=False)
+    
+    # class Meta:
+    #     unique_together = (('id_tipoActividad', 'id_periodo', 'id_grado' ),)
+    
+class PagoActividad(models.Model):
+    id_pagoActividad = models.AutoField(primary_key=True)
+    id_actividad = models.ForeignKey(Actividad, on_delete=models.CASCADE, related_name='PagoActividad')
+    id_matricula = models.ForeignKey(Matricula, on_delete=models.CASCADE)
+    id_comprobante = models.ForeignKey(Comprobante, on_delete=models.CASCADE)
+    fecha_pago = models.DateField(auto_now_add=True)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+    
+    
