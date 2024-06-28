@@ -522,7 +522,7 @@ class PendientePagoActividadView(generics.ListAPIView):
             return Response({"error": "No hay un período académico activo"}, status=status.HTTP_404_NOT_FOUND)
         actividades = Actividad.objects.filter(id_grado=matricula.id_grado, id_periodo=periodo.id_periodo, es_activo=True) 
         if not actividades:
-            return Response({"error": "Sin pagos por realizar"}, status=status.HTTP_404_NOT_FOUND)
+            return Response([], status=status.HTTP_204_NO_CONTENT)
         print(actividades)
         pagosActividad = []
         for actividad in actividades:
