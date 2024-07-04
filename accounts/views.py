@@ -30,6 +30,20 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
     
+class ValidatePasswordView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordValidationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = authenticate(
+                username=request.user.username, 
+                password=serializer.validated_data['password']
+            )
+            if user is not None:
+                return Response({'detail': 'Password is valid'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class QRCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 

@@ -18,5 +18,6 @@ urlpatterns = [
     path('users/', views.UsersListCreateView.as_view() ), 
     path('users/<int:pk>/', views.UserDetailView.as_view() ), 
     path('groups/', views.GroupDetailView.as_view() ), 
+    path('auth/validate-password/', views.ValidatePasswordView.as_view(), name='validate-password'),
 ]
 

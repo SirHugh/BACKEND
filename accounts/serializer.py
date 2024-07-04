@@ -9,6 +9,9 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name']
 
+class PasswordValidationSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+
 class UserSerializer(serializers.ModelSerializer): 
     
     class Meta(object):
