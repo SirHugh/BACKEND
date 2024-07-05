@@ -26,6 +26,8 @@ class GradoListCreateView(generics.ListCreateAPIView):
     queryset = Grado.objects.all()
     pagination_class = None
     serializer_class = GradoSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['es_activo']
     
 class GradoDetailView(generics.RetrieveUpdateAPIView): 
     # permission_classes = (IsAuthenticated,)

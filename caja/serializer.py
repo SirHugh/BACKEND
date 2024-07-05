@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import   Arancel, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
+from .models import   Arancel, AjusteDetalle, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
 from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
 from accounts.models import User
 
@@ -11,6 +11,16 @@ class TimbradoSerializer(serializers.ModelSerializer):
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
+        fields = '__all__'
+
+class AjusteDetalleSerializer(serializers.ModelSerializer):
+    id_producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    cantidad = serializers.IntegerField()
+    fecha = serializers.DateTimeField(required=False)
+
+    class Meta:
+        model = AjusteDetalle        
         fields = '__all__'
 
 class ArancelInputSerializer(serializers.ModelSerializer):

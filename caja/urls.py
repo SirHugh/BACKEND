@@ -13,6 +13,10 @@ urlpatterns = [
     # producto endpoints
     path('producto/', views.ProductoListCreateView.as_view()),
     path('producto/<int:pk>', views.ProductoDetailView.as_view()),
+    
+    # producto endpoints
+    path('inventario/ajuste/', views.AjusteListCreateView.as_view()),
+    path('inventario/ajuste/<int:pk>', views.AjusteDetailView.as_view()),
 
     # arancel endpoints
     path('arancel/', views.ArancelListCreateView.as_view() ),

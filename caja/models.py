@@ -25,12 +25,23 @@ class Producto(models.Model):
     iva = models.IntegerField(default=0)
     es_activo = models.BooleanField()
     stock = models.IntegerField(null=True, blank=True)
+    stock_minimo = models.IntegerField(null=True, blank=True)
     precio = models.IntegerField(null=True, blank=True)
     grados = models.ManyToManyField(Grado, related_name='productos', blank=True)
     es_mensual = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.nombre
+#
+# ------------------------------------ AjusteDetalle Model ---------------------------- 
+#   
+class AjusteDetalle(models.Model):
+    id_ajusteDetalle = models.AutoField(primary_key=True)
+    id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()    
+    razon = models.CharField(max_length=50)
+    fecha = models.DateTimeField(auto_now_add=True)
  
 #
 # ------------------------------------ Timbrado Model ---------------------------- 

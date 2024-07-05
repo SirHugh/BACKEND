@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja
-from .serializer import   ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
+from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, AjusteDetalle
+from .serializer import AjusteDetalleSerializer , ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
@@ -18,13 +18,42 @@ class ProductoListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductoSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
-    search_fields = ['^nombre','^descripcion']
+    search_fields = ['nombre','descripcion']
     filterset_fields = ['tipo', 'grados','es_activo']
 
 class ProductoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
 
+# ---------------------------------------------
+# ---------vistas de Ajuste------------------
+# ---------------------------------------------
+
+class AjusteListCreateView(generics.ListCreateAPIView):
+    queryset = AjusteDetalle.objects.all()
+    serializer_class = AjusteDetalleSerializer
+    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    pagination_class = OptionalPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['']
+    
+    def create(self, request, *args, **kwargs):
+        ajustes = request.data
+        serializer = self.serializer_class(data=ajustes, many=True)
+        serializer.is_valid(raise_exception=True)
+    
+        for ajuste in ajustes:
+            producto = Producto.objects.get(pk=ajuste['id_producto'])
+            producto.stock += ajuste['cantidad']
+            producto.save()
+
+        serializer.save()
+        return Response({'message':'Guardado Exitoso' }, status=status.HTTP_201_CREATED)
+
+class AjusteDetailView(generics.RetrieveUpdateAPIView):
+    queryset = AjusteDetalle.objects.all()
+    serializer_class = AjusteDetalleSerializer
+    
 # ---------------------------------------------
 # ---------vistas de Timbrado------------------
 # ---------------------------------------------
