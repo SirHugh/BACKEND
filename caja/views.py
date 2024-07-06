@@ -47,7 +47,7 @@ class AjusteListCreateView(generics.ListCreateAPIView):
             producto.stock += ajuste['cantidad']
             producto.save()
 
-        serializer.save()
+        serializer.save(id_usuario=self.request.user)
         return Response({'message':'Guardado Exitoso' }, status=status.HTTP_201_CREATED)
 
 class AjusteDetailView(generics.RetrieveUpdateAPIView):

@@ -15,7 +15,7 @@ class ProductoSerializer(serializers.ModelSerializer):
 
 class AjusteDetalleSerializer(serializers.ModelSerializer):
     id_producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
-    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     cantidad = serializers.IntegerField()
     fecha = serializers.DateTimeField(required=False)
 
