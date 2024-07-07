@@ -35,7 +35,13 @@ class AjusteListCreateView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['']
+    search_fields = ['id_producto__nombre', 'razon']
+     
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializer.AjusteOutputSerializer
+        else:
+            return self.serializer_class
     
     def create(self, request, *args, **kwargs):
         ajustes = request.data

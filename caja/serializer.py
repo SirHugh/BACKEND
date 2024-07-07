@@ -22,6 +22,20 @@ class AjusteDetalleSerializer(serializers.ModelSerializer):
     class Meta:
         model = AjusteDetalle        
         fields = '__all__'
+        
+class AjusteOutputSerializer(serializers.ModelSerializer):
+    producto = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = AjusteDetalle
+        fields = ['id_ajusteDetalle', 'id_producto', 'producto', 'razon', 'fecha', 'cantidad']
+        
+    def get_producto(self, obj):
+        try:
+            producto = obj.id_producto.__str__()
+            return producto
+        except Producto.DoesNotExist:
+            return None
 
 class ArancelInputSerializer(serializers.ModelSerializer):
     class Meta:
