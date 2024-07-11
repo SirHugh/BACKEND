@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, AjusteDetalle
@@ -484,7 +485,7 @@ class TipoActividadDetailView(generics.RetrieveUpdateAPIView):
 
 class ActividadListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
-    queryset = Actividad.objects.all()
+    queryset = Actividad.objects.all().order_by('-fecha', 'es_activo')
     pagination_class = OptionalPagination
     # serializer_class = serializer.FlujoCajaOutputSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
@@ -542,23 +543,19 @@ class ActividadDetailView(generics.RetrieveUpdateAPIView):
 # ---------------------------------------------
 # -----------vistas de Pago Actividades-------------
 # ---------------------------------------------
-
-class PendientePagoActividadView(generics.ListAPIView):
-    def get(self, request, *args, **kwargs):
-        id_matricula = self.request.query_params.get('id_matricula') or None
-        if id_matricula is None:
-            return Response({"error": "no se entro el parametro id_matricula"}, status=status.HTTP_404_NOT_FOUND)
+def get_pago_pendiente(id_matricula): 
         try:
             matricula = Matricula.objects.get(pk=id_matricula)
         except:
-            return Response({"error": "No se encontro la matricula"}, status=status.HTTP_404_NOT_FOUND)
+            return []
         periodo = Periodo.get_current()
         if periodo is None:
             return Response({"error": "No hay un período académico activo"}, status=status.HTTP_404_NOT_FOUND)
         actividades = Actividad.objects.filter(id_grado=matricula.id_grado, id_periodo=periodo.id_periodo, es_activo=True) 
-        if not actividades:
+        actividades_serialized = ActividadInputSerializer(data=actividades, many=True)
+        actividades_serialized.is_valid()
+        if not actividades_serialized:
             return Response([], status=status.HTTP_204_NO_CONTENT)
-        print(actividades)
         pagosActividad = []
         for actividad in actividades:
             pago = {
@@ -575,7 +572,19 @@ class PendientePagoActividadView(generics.ListAPIView):
             if monto > 0:
                 pago['monto'] = monto
                 pagosActividad.append(pago)
-        return Response(pagosActividad) 
+        return pagosActividad
+    
+class PendientePagoActividadView(generics.ListAPIView):
+    # permission_classes = (IsAuthenticated,)
+     def get(self, request, *args, **kwargs):
+        id_matricula = self.request.query_params.get('id_matricula') or None
+        if id_matricula is None:
+            return Response({"error": "no se entro el parametro id_matricula"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            matricula = Matricula.objects.get(pk=id_matricula)
+        except:
+            return Response({"error": "No se encontro la matricula"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(get_pago_pendiente(id_matricula=id_matricula))
     
 
 class PagoActividadListView(generics.ListCreateAPIView):
@@ -603,3 +612,34 @@ class PagoActividadDetailView(generics.RetrieveUpdateAPIView):
         else:
             return PagoActividadInputSerializer
 
+#----------------------------
+#---vista EstadoDeCuenta-----
+#---------------------------- 
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def EstadoDeCuenta(request, pk):    
+    try:
+        matricula = Matricula.objects.get(id_matricula=pk)
+    except Matricula.DoesNotExist:
+         return Response({"error": "No se encontro la matricula"}, status=status.HTTP_404_NOT_FOUND)
+        
+    actividad_pagos = PagoActividad.objects.filter(id_matricula=matricula)
+    actividad_pagosSerializer = PagoActividadOutputSerializer(data=actividad_pagos, many=True) 
+    actividad_pagosSerializer.is_valid()
+    
+    actividad_pendiente = get_pago_pendiente(id_matricula=pk) 
+    
+    aranceles = Arancel.objects.filter(id_matricula=pk)
+    aranceles_serialized = ArancelOutputSerializer(data=aranceles, many=True)
+    aranceles_serialized.is_valid()
+    
+    pago_ventas = PagoVenta.objects.filter(id_venta__id_matricula=pk).order_by('id_venta')
+    ventas_serialized = serializer.PagoVentaOutputSerializer(data=pago_ventas, many=True)
+    ventas_serialized.is_valid()
+    
+    return Response({'actividad_pagos': actividad_pagosSerializer.data, 
+                     'actividad_pendiente': actividad_pendiente, 
+                     'aranceles':aranceles_serialized.data,
+                     'ventas':ventas_serialized.data})
+                        

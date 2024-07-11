@@ -73,17 +73,23 @@ class PagoVentaOutputSerializer(serializers.ModelSerializer):
     alumno = serializers.SerializerMethodField()
     descripcion = serializers.SerializerMethodField()
     nroPagos = serializers.SerializerMethodField()
+    nroFactura = serializers.SerializerMethodField()
 
     class Meta:
         model = PagoVenta
-        fields = ['id_pago','id_venta', 'nroPagos', 'descripcion', 'alumno', 'fecha_vencimiento', 'nro_pago', 'monto', 'es_activo']
+        fields = ['id_pago','id_venta', 'nroPagos', 'descripcion', 
+                  'alumno', 'fecha_vencimiento', 'nro_pago', 'monto', 
+                  'es_activo', 'nroFactura']
 
     def get_alumno(self, obj):
         try:
             alumno = obj.id_venta.id_matricula.id_alumno.__str__()
             return alumno
         except Alumno.DoesNotExist:
-            return None
+            return None 
+        
+    def get_nroFactura(self, obj):
+        return getattr(obj.id_comprobante, 'nro_factura', None)
     
     def get_descripcion(self, obj):
         try:
@@ -402,10 +408,11 @@ class PagoActividadInputSerializer(serializers.ModelSerializer):
 class PagoActividadOutputSerializer(serializers.ModelSerializer):
     actividad = serializers.SerializerMethodField()
     alumno = serializers.SerializerMethodField()
+    nro_factura = serializers.SerializerMethodField()
     
     class Meta:
         model = PagoActividad
-        fields = ['id_pagoActividad', 'actividad', 'alumno', 'monto', 'fecha_pago']
+        fields = ['id_pagoActividad', 'actividad', 'alumno', 'monto', 'fecha_pago', 'id_actividad', 'nro_factura']
         
     def get_actividad(self, obj):
         try:
@@ -413,6 +420,9 @@ class PagoActividadOutputSerializer(serializers.ModelSerializer):
             return actividad
         except PagoActividad.DoesNotExist:
             return None
+        
+    def get_nro_factura(self, obj):
+        return getattr(obj.id_comprobante, 'nro_factura', None)
     
     def get_alumno(self, obj):
         try:

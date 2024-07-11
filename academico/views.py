@@ -61,7 +61,7 @@ class MatriculaListCreateView(generics.ListCreateAPIView):
     queryset = Matricula.objects.all().order_by('es_activo','-fecha_inscripcion' )
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo', 'id_alumno__cedula']
+    filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo', 'id_alumno__cedula', 'id_alumno']
     search_fields = ['^id_alumno__apellido', 'id_alumno__nombre','^id_alumno__cedula','^id_grado__grado',  ]
 
     def get_serializer_class(self):

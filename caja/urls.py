@@ -51,4 +51,7 @@ urlpatterns = [
     path('actividad/pago/', views.PagoActividadListView.as_view() ),
     path('actividad/pago/<int:pk>', views.PagoActividadDetailView.as_view()),
     path('actividad/pago/pendiente/', views.PendientePagoActividadView.as_view()),
+    
+    #Estado de cuenta endpoints
+    path('estado_cuenta/<int:pk>', views.EstadoDeCuenta),
 ]

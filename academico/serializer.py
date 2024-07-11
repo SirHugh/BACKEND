@@ -25,7 +25,7 @@ class GradoSerializer(serializers.ModelSerializer):
 class GradoNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grado
-        fields = ['id_grado', 'grado', 'nombre']
+        fields = ['id_grado', 'grado', 'nombre', 'turno']
 
 class MatriculaInputSerializer(serializers.ModelSerializer):
     class Meta:
