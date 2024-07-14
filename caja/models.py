@@ -35,8 +35,8 @@ class Producto(models.Model):
 #
 # ------------------------------------ AjusteDetalle Model ---------------------------- 
 #   
-class AjusteDetalle(models.Model):
-    id_ajusteDetalle = models.AutoField(primary_key=True)
+class BajaInventario(models.Model):
+    id_bajaInventario = models.AutoField(primary_key=True)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cantidad = models.IntegerField()    

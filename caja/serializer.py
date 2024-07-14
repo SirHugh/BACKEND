@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import   Arancel, AjusteDetalle, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
+from .models import   Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
 from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
 from accounts.models import User
 
@@ -13,22 +13,22 @@ class ProductoSerializer(serializers.ModelSerializer):
         model = Producto
         fields = '__all__'
 
-class AjusteDetalleSerializer(serializers.ModelSerializer):
+class BajaInventarioSerializer(serializers.ModelSerializer):
     id_producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
     id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     cantidad = serializers.IntegerField()
     fecha = serializers.DateTimeField(required=False)
 
     class Meta:
-        model = AjusteDetalle        
+        model = BajaInventario        
         fields = '__all__'
         
-class AjusteOutputSerializer(serializers.ModelSerializer):
+class BajaInventarioOutputSerializer(serializers.ModelSerializer):
     producto = serializers.SerializerMethodField()
     
     class Meta:
-        model = AjusteDetalle
-        fields = ['id_ajusteDetalle', 'id_producto', 'producto', 'razon', 'fecha', 'cantidad']
+        model = BajaInventario
+        fields = ['id_bajaInventario', 'id_producto', 'producto', 'razon', 'fecha', 'cantidad']
         
     def get_producto(self, obj):
         try:

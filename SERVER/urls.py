@@ -24,5 +24,6 @@ urlpatterns = [
     path('auth/',include('accounts.urls')),
     path("academico/", include('academico.urls')),
     path('caja/', include('caja.urls')), 
-    path('basics/', include('basics.urls')), 
+    path('basics/', include('basics.urls')),
+    path('comercial/', include('comercial.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

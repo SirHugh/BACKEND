@@ -14,9 +14,9 @@ urlpatterns = [
     path('producto/', views.ProductoListCreateView.as_view()),
     path('producto/<int:pk>', views.ProductoDetailView.as_view()),
     
-    # producto endpoints
-    path('inventario/ajuste/', views.AjusteListCreateView.as_view()),
-    path('inventario/ajuste/<int:pk>', views.AjusteDetailView.as_view()),
+    # Baja de Inventario endpoints
+    path('inventario/ajuste/', views.BajaInventarioListCreateView.as_view()),
+    path('inventario/ajuste/<int:pk>', views.BajaInventarioDetailView.as_view()),
 
     # arancel endpoints
     path('arancel/', views.ArancelListCreateView.as_view() ),

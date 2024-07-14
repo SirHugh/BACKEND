@@ -1,11 +1,9 @@
-from rest_framework import status
+from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import generics
-from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, AjusteDetalle
-from .serializer import AjusteDetalleSerializer , ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
+from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
+from .serializer import ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
-from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
 from django_filters.rest_framework import DjangoFilterBackend
 from academico.views import OptionalPagination
@@ -15,6 +13,7 @@ from django.db.models import Q
 # ---------------------------------------------
 
 class ProductoListCreateView(generics.ListCreateAPIView):
+    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
     pagination_class = OptionalPagination
@@ -30,9 +29,9 @@ class ProductoDetailView(generics.RetrieveUpdateAPIView):
 # ---------vistas de Ajuste------------------
 # ---------------------------------------------
 
-class AjusteListCreateView(generics.ListCreateAPIView):
-    queryset = AjusteDetalle.objects.all()
-    serializer_class = AjusteDetalleSerializer
+class BajaInventarioListCreateView(generics.ListCreateAPIView):
+    queryset = BajaInventario.objects.all().order_by('-fecha')
+    serializer_class = serializer.BajaInventarioSerializer
     # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -40,7 +39,7 @@ class AjusteListCreateView(generics.ListCreateAPIView):
      
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return serializer.AjusteOutputSerializer
+            return serializer.BajaInventarioOutputSerializer
         else:
             return self.serializer_class
     
@@ -57,9 +56,9 @@ class AjusteListCreateView(generics.ListCreateAPIView):
         serializer.save(id_usuario=self.request.user)
         return Response({'message':'Guardado Exitoso' }, status=status.HTTP_201_CREATED)
 
-class AjusteDetailView(generics.RetrieveUpdateAPIView):
-    queryset = AjusteDetalle.objects.all()
-    serializer_class = AjusteDetalleSerializer
+class BajaInventarioDetailView(generics.RetrieveUpdateAPIView):
+    queryset = BajaInventario.objects.all()
+    serializer_class = serializer.BajaInventarioOutputSerializer
     
 # ---------------------------------------------
 # ---------vistas de Timbrado------------------

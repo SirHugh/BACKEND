@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'academico',
     'caja',    
     'basics',
+    'comercial',
 ]
 
 MIDDLEWARE = [
