@@ -72,4 +72,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.apellido 
     
     def __str__(self):
-        return self.email
+        return f'{self.nombre +' '+ self.apellido}'

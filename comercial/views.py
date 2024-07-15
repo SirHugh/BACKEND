@@ -8,6 +8,7 @@ from academico.views import OptionalPagination
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
 from caja.views import ProductoListCreateView
 from django.db.models import Q
+from caja.models import Producto
 
 # Create your views here.
 class ControlListView(generics.ListAPIView):
@@ -57,11 +58,27 @@ class InitiateStockControlView(ProductoListCreateView):
     
 
 class ControlDatailView(generics.RetrieveAPIView):
-    queryset = ControlStock.objects.all()
-    serializer_class = ControlStockSerializer
-    pagination_class = OptionalPagination
     # permission_classes = [IsAuthenticated, DjangoModelPermissions]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
+    queryset = ControlStock.objects.all()
+    serializer_class = ControlStockSerializer 
+
+class CloseStockControlView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    queryset = ControlStock.objects.all()
+    serializer_class = ControlStockSerializer 
+    
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.es_activo = False
+        detalle_control = DetalleControl.objects.filter(id_controlStock=instance)
+        for detalle in detalle_control:
+            diferencia = detalle.cantidad_contada - detalle.stock
+            producto = Producto.objects.get(pk=detalle.id_producto.id_producto)
+            producto.stock += diferencia;
+            print(producto, detalle.stock, detalle.cantidad_contada, diferencia, producto.stock)
+            producto.save()
+        instance.save()
+        return super().get(request, *args, **kwargs)
  
 class DetalleControlListView(generics.ListAPIView):
     queryset = DetalleControl.objects.all()
