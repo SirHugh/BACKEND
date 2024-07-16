@@ -32,12 +32,9 @@ class InitiateStockControlView(ProductoListCreateView):
         filtered_products = filtered_products.filter(**filters)
         if search_query:
             filtered_products = filtered_products.filter(Q(nombre__icontains=search_query) | Q(descripcion__icontains=search_query))
-
-        print("","\nproductos filtrados")
-        print(filtered_products)
-        print("","\nproductos filtrados")
+ 
         # Crea una nueva entrada ControlStock
-        control_stock = ControlStock.objects.create(id_usuario=request.user)
+        control_stock = ControlStock.objects.create(id_usuario=request.user, cantidad_productos=filtered_products.count())
 
         # Crea DetalleControl entradas para cada producto filtrado
         detalle_controls = []

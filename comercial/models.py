@@ -6,6 +6,7 @@ class ControlStock(models.Model):
     id_usuario = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     fecha = models.DateField(auto_now=False, auto_now_add=True)
     es_activo = models.BooleanField(default=True)
+    cantidad_productos = models.IntegerField()
     
 class DetalleControl(models.Model):
     id_detalleControl = models.AutoField(primary_key=True)
