@@ -15,8 +15,10 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('qr-code/', views.QRCodeView.as_view(), name='qr-code-generate'),
     
+    path('users/<int:pk>/password', views.UpdatePasswordView.as_view()),
     path('users/', views.UsersListCreateView.as_view() ), 
     path('users/<int:pk>/', views.UserDetailView.as_view() ), 
+    path('users/<int:pk>/photo/', views.UpdateUserProfilePhotoView.as_view()),
     path('groups/', views.GroupDetailView.as_view() ), 
     path('auth/validate-password/', views.ValidatePasswordView.as_view(), name='validate-password'),
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import   Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
+from .models import FormaPago, Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
 from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
 from accounts.models import User
 
@@ -165,10 +165,11 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
     ventas = serializers.SerializerMethodField()
     actividades =serializers.SerializerMethodField()
     cliente = serializers.SerializerMethodField()
+    forma_pago = serializers.SerializerMethodField()
 
     class Meta:
         model = Comprobante
-        fields = ['id_comprobante', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'monto', 'cliente', 'aranceles', 'ventas', 'actividades']
+        fields = ['id_comprobante', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'monto', 'cliente', 'aranceles', 'ventas', 'actividades', 'forma_pago']
 
     def get_cliente(self, obj):
         try:
@@ -197,11 +198,15 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
             return PagoActividadOutputSerializer(actividades, many=True).data
         except PagoActividad.DoesNotExist:
             return None
+        
+    def get_forma_pago(self, obj):
+        return getattr(obj.id_formaPago, "nombre", None) 
 # 
 # 
 # ----- Detalle Compra serializers
 # 
 # 
+
 class DetalleCompraInputSerializer(serializers.ModelSerializer):
     id_producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
 
@@ -430,3 +435,8 @@ class PagoActividadOutputSerializer(serializers.ModelSerializer):
             return alumno
         except PagoActividad.DoesNotExist:
             return None
+
+class FormaPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormaPago
+        fields = ['id_formaPago', 'nombre']

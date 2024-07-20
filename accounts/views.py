@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .serializer import UserSerializer, UserOutputSerializer, GroupSerializer
+from .serializer import UserSerializer, UserOutputSerializer, GroupSerializer, UserProfilePhotoSerializer
 from rest_framework import status, generics, filters
 from .models import User
 
@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import Group
 from django.utils import timezone
 import json
+from rest_framework.parsers import FileUploadParser, MultiPartParser, FormParser
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -44,6 +45,25 @@ class ValidatePasswordView(APIView):
                 return Response({'detail': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UpdatePasswordView(APIView):
+    def post(self, request, pk):
+        user = User.objects.get(pk=pk)
+        print(request.data)
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not user.check_password(old_password):
+            return Response({'message': 'La contraseña actual es incorrecta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({'message': 'La confimacion y la nueva contraseña no son iguales'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'message': 'Contaseña actualizada!'}, status=status.HTTP_200_OK)
+    
 class QRCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -58,6 +78,7 @@ class QRCodeView(APIView):
         img.save(response, 'PNG')
 
         return  response
+
 
  
 class UsersListCreateView(generics.ListCreateAPIView):
@@ -89,6 +110,7 @@ class UsersListCreateView(generics.ListCreateAPIView):
 
 class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
+    # permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer 
     pagination_class = None
     
@@ -101,6 +123,8 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         user = self.get_object()
         user_data = request.data.get("user") 
+        print("userdata", user_data)
+        print("user", user)
         serializer = self.get_serializer(user, data=user_data, partial=True)
         serializer.is_valid(raise_exception=True)
 
@@ -108,13 +132,25 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         if user_data.get('password'):
             user.set_password(user_data['password'])
             user.save() 
-        groups_data = request.data.pop('groups')
-        user.groups.clear()
-        if groups_data:
+        groups_data = request.data.pop('groups') or None
+        if groups_data is not None:
+            user.groups.clear()
             for group_data in groups_data: 
                 group = Group.objects.get(id=group_data)
                 user.groups.add(group) 
         return Response(serializer.data, status=status.HTTP_201_CREATED )
+
+class UpdateUserProfilePhotoView(APIView):
+    # permission_classes = (IsAuthenticated,)
+    parser_class = (MultiPartParser, FormParser)
+
+    def put(self, request, pk):
+        user = User.objects.get(pk=pk)
+        serializer = UserProfilePhotoSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GroupDetailView(generics.ListAPIView):
     queryset = Group.objects.all()

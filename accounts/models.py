@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+def upload_to(instance, filename):
+    return 'UsersPhoto/{filename}'.format(filename=filename) 
+
 class UserManager(BaseUserManager):
     def _create_user(self, email, password, nombre, apellido, telefono, **extra_fields):
         if not email:
@@ -54,6 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     cedula = models.IntegerField(null=True, blank=True)
     direccion = models.CharField(max_length=254, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
+    foto = models.ImageField(upload_to=upload_to, blank=True, null=True)
     
     is_staff = models.BooleanField(default=True) # must needed, otherwise you won't be able to loginto django-admin.
     is_active = models.BooleanField(default=True) # must needed, otherwise you won't be able to loginto django-admin.

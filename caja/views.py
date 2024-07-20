@@ -1,7 +1,7 @@
 from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
+from .models import FormaPago, Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
 from .serializer import ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
@@ -641,4 +641,14 @@ def EstadoDeCuenta(request, pk):
                      'actividad_pendiente': actividad_pendiente, 
                      'aranceles':aranceles_serialized.data,
                      'ventas':ventas_serialized.data})
-                        
+
+class FormaPagoListCreateView(generics.ListCreateAPIView):
+    queryset = FormaPago.objects.all()
+    serializer_class = serializer.FormaPagoSerializer
+    # permission_classes = (IsAuthenticated,)
+
+class FormaPagoDetailView(generics.RetrieveUpdateAPIView):
+    queryset = FormaPago.objects.all()
+    serializer_class = serializer.FormaPagoSerializer
+    # permission_classes = (IsAuthenticated,)
+    

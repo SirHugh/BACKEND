@@ -54,4 +54,9 @@ urlpatterns = [
     
     #Estado de cuenta endpoints
     path('estado_cuenta/<int:pk>', views.EstadoDeCuenta),
+    
+    #Forma de pago endpoints
+    path('forma_pago/', views.FormaPagoListCreateView.as_view() ),
+    path('forma_pago/<int:pk>', views.FormaPagoDetailView.as_view() ),
+    
 ]

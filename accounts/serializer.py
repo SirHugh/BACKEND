@@ -12,11 +12,14 @@ class GroupSerializer(serializers.ModelSerializer):
 class PasswordValidationSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
-class UserSerializer(serializers.ModelSerializer): 
+class UserSerializer(serializers.ModelSerializer):  
+    cedula = serializers.CharField(required=False, allow_null=True)
+    telefono = serializers.CharField(required=False, allow_null=True)
+    direccion = serializers.CharField(required=False, allow_null=True)
     
     class Meta(object):
         model = User 
-        fields = [ 'id', 'email', 'nombre', 'apellido', 'is_active']
+        fields = [ 'id', 'email', 'nombre', 'apellido', 'is_active', 'telefono', 'direccion', 'cedula']
     
     def validate(self, attrs):
         user_id = self.context['view'].kwargs['pk'] if 'pk' in self.context['view'].kwargs else None
@@ -30,16 +33,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserOutputSerializer(serializers.ModelSerializer): 
     password = serializers.CharField(write_only=True) 
-    # group = serializers.SerializerMethodField()
-
-    # def get_group(self, obj):
-    #     try:
-    #         group = obj.groups.get()
-    #         return group.id
-    #     except Group.DoesNotExist:
-    #         return None
+    
     class Meta(object):
             model = User 
             fields = '__all__' 
 
     
+class UserProfilePhotoSerializer(serializers.ModelSerializer):
+      
+    class Meta:
+        model = User
+        fields = ['foto']

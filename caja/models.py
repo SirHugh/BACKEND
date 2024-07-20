@@ -116,6 +116,7 @@ class Comprobante(models.Model):
     hora = models.TimeField(auto_now_add=True, blank=True, null=True)
     tipo_pago = models.CharField( max_length=50)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
+    id_formaPago = models.ForeignKey("FormaPago", on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         ordering = ['-fecha']
@@ -240,6 +241,8 @@ class PagoActividad(models.Model):
     fecha_pago = models.DateField(auto_now_add=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
 
-
+class FormaPago(models.Model):
+    id_formaPago = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=50)
     
     
