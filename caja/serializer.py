@@ -174,6 +174,7 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
     actividades =serializers.SerializerMethodField()
     cliente = serializers.SerializerMethodField()
     forma_pago = serializers.SerializerMethodField()
+    nro_factura = serializers.SerializerMethodField()
 
     class Meta:
         model = Comprobante
@@ -209,6 +210,10 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
         
     def get_forma_pago(self, obj):
         return getattr(obj.id_formaPago, "nombre", None) 
+    
+    def get_nro_factura(self, obj):
+        nro_factura = f'{str(obj.id_timbrado.establecimiento).zfill(3)}-{str(obj.id_timbrado.punto_expedicion).zfill(3)}-{str(obj.nro_factura).zfill(7)}'
+        return nro_factura
 # 
 # 
 # ----- Detalle Compra serializers
