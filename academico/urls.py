@@ -27,7 +27,7 @@ urlpatterns = [
     # becados endpoints
     path('becado/', becadoListCreateView.as_view(), name='becado-list-create'),
     path('becado/<int:pk>/', BecadoDetailView.as_view(), name='becado-detalle'),
-    path('becado/beca/<int:pk>/', views.becado_detail),
+    path('becado/matricula/<int:pk>/', views.becado_detail),
     
     # cliente endpoints
     path('cliente/', ClienteListCreateView.as_view()),

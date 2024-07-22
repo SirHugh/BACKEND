@@ -50,10 +50,35 @@ class BecadoInputSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class BecadoOutputSerializer(serializers.ModelSerializer):
-    id_matricula = MatriculaOutputSerializer()
+    alumno = serializers.SerializerMethodField()
+    grado = serializers.SerializerMethodField()
+    
     class Meta:
         model = Becado
-        fields = '__all__'
+        fields = ['id', 'id_beca', 'id_matricula', 'es_activo', 'alumno', 'grado']
+    
+    def get_alumno(self, obj):
+        return AlumnoOutputSerializer(obj.id_matricula.id_alumno).data
+    def get_grado(self, obj):
+        return GradoNameSerializer(obj.id_matricula.id_grado).data
+    
+class BecaMatriculaSerializer(serializers.ModelSerializer):
+    beca = serializers.SerializerMethodField() 
+    alumno = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Becado
+        fields = ['id', 'id_beca', 'id_matricula', 'es_activo', 'beca', 'alumno']
+    
+    def get_beca(self, obj):
+        return BecaSerializer(obj.id_beca).data 
+
+    def get_alumno(self, obj):
+        try:
+            alumno = obj.id_matricula.id_alumno.__str__()
+            return alumno
+        except Alumno.DoesNotExist:
+            return None
 
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:

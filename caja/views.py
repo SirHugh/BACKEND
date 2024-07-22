@@ -2,7 +2,7 @@ from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import FormaPago, Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
-from .serializer import ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
+from .serializer import DescuentoBecaInputSerializer, ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
 from django_filters.rest_framework import DjangoFilterBackend
@@ -119,7 +119,8 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
 
         aranceles = request.data.get('aranceles',[])
         pagoventas = request.data.get('pagoventas',[])
-        actividades = request.data.get('actividades', []) 
+        actividades = request.data.get('actividades', [])
+        descuentos = request.data.get('descuentos', []) 
 
         if not aranceles and not pagoventas and not actividades:
             return Response({'error':'No se encontradon pagos'}, status=status.HTTP_404_NOT_FOUND)
@@ -161,7 +162,13 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
                 serializer.is_valid() 
                 serializer.validated_data['id_comprobante'] = invoice  
                 serializer.save()
-
+        
+        if descuentos:
+            for descuento in descuentos:
+                d_beca = DescuentoBecaInputSerializer(data=descuento)
+                d_beca.is_valid() 
+                d_beca.save()
+                
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ComprobanteDetailView(generics.RetrieveUpdateAPIView):
@@ -645,6 +652,7 @@ def EstadoDeCuenta(request, pk):
 class FormaPagoListCreateView(generics.ListCreateAPIView):
     queryset = FormaPago.objects.all()
     serializer_class = serializer.FormaPagoSerializer
+    pagination_class = OptionalPagination
     # permission_classes = (IsAuthenticated,)
 
 class FormaPagoDetailView(generics.RetrieveUpdateAPIView):

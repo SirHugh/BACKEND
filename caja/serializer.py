@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FormaPago, Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
+from .models import DescuentoBeca, FormaPago, Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
 from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
 from accounts.models import User
 
@@ -45,10 +45,11 @@ class ArancelInputSerializer(serializers.ModelSerializer):
 class ArancelOutputSerializer(serializers.ModelSerializer):
     alumno = serializers.SerializerMethodField()
     nombre = serializers.SerializerMethodField()
+    descuento = serializers.SerializerMethodField()
 
     class Meta:
         model = Arancel
-        fields = ["id_arancel", "id_comprobante", "alumno", "nombre", "fecha_vencimiento", "nro_cuota", "monto", "es_activo"]
+        fields = ["id_arancel", 'id_producto', "id_comprobante", "alumno", "nombre", "fecha_vencimiento", "nro_cuota", "monto", "es_activo", "descuento"]
 
     def get_alumno(self, obj):
         try:
@@ -62,6 +63,13 @@ class ArancelOutputSerializer(serializers.ModelSerializer):
             producto = obj.id_producto.__str__()
             return producto
         except Producto.DoesNotExist:
+            return None
+        
+    def get_descuento(self, obj):
+        try:
+            descuentos = DescuentoBeca.objects.filter(id_arancel=obj.id_arancel)
+            return DescuentoBecaOutputSerializer(descuentos, many=True).data
+        except DescuentoBeca.DoesNotExist:
             return None
 
 class PagoVentaInputSerializer(serializers.ModelSerializer):
@@ -440,3 +448,23 @@ class FormaPagoSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormaPago
         fields = ['id_formaPago', 'nombre']
+        
+class DescuentoBecaInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DescuentoBeca
+        fields = '__all__'
+        
+class DescuentoBecaOutputSerializer(serializers.ModelSerializer):
+    beca = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DescuentoBeca
+        fields = ['id', 'id_arancel', 'monto', 'beca']
+        
+    def get_beca(self, obj):
+        try:
+            beca = obj.id_beca.nombre
+            return beca
+        except DescuentoBeca.DoesNotExist:
+            return None
+        

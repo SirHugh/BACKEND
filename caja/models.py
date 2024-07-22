@@ -245,4 +245,7 @@ class FormaPago(models.Model):
     id_formaPago = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     
-    
+class DescuentoBeca(models.Model):
+    id_arancel = models.ForeignKey(Arancel, on_delete=models.CASCADE)    
+    id_beca = models.ForeignKey("academico.Beca", on_delete=models.CASCADE)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)

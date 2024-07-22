@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view 
 from rest_framework.response import Response
 from .models import Alumno, Grado, Matricula, Beca, Becado, Cliente, Responsable, Periodo
-from .serializer import AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, PeriodoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoInputSerializer, BecadoOutputSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
+from .serializer import BecaMatriculaSerializer, AlumnoInputSerializer, AlumnoOutputSerializer, GradoSerializer, PeriodoSerializer, MatriculaInputSerializer, MatriculaOutputSerializer, BecaSerializer, BecadoInputSerializer, BecadoOutputSerializer, ClienteSerializer, ResponsableInputSerializer, ResponsableOutputSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
@@ -102,8 +102,8 @@ class BecaDetailView(generics.RetrieveUpdateAPIView):
 class becadoListCreateView(generics.ListCreateAPIView):
     queryset = Becado.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    pagination_class = PageNumberPagination
-    filterset_fields = ['id_beca', 'id_matricula']
+    pagination_class = OptionalPagination
+    filterset_fields = ['id_beca', 'id_matricula', 'es_activo']
     search_fields = ['^id_matricula__id_alumno__apellido', '^id_matricula__id_alumno__nombre', '^id_matricula__id_alumno__cedula' ]
 
     
@@ -121,20 +121,19 @@ class BecadoDetailView(generics.RetrieveUpdateAPIView):
         return BecadoOutputSerializer 
 
   
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET'])
 def becado_detail(request, pk):
     """
     Obtener, actualizar o eliminar una matriculacion. 
     """
     try:
-        becado = Becado.objects.filter(id_beca=pk)
+        becado = Becado.objects.filter(id_matricula=pk, es_activo=True)
     except becado.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = BecadoOutputSerializer(becado, many=True)
+        serializer = BecaMatriculaSerializer(becado, many=True)
         return Response(serializer.data)
- 
 
 #------------------vistas de clientes----------------------------------
 class ClienteListCreateView(generics.ListCreateAPIView):
@@ -143,6 +142,7 @@ class ClienteListCreateView(generics.ListCreateAPIView):
     pagination_class = OptionalPagination 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['cedula']
+    search_fields = ['cedula', 'nombre', 'apellido']
 
 class ClienteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Cliente.objects.all()
@@ -208,3 +208,4 @@ class PeriodoDetailView(generics.RetrieveUpdateAPIView):
             return Response(serializer.data)
 
         return super().update(request, *args, **kwargs)
+    
