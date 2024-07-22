@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .serializer import UserSerializer, UserOutputSerializer, GroupSerializer, UserProfilePhotoSerializer
+from .serializer import UserSerializer, UserOutputSerializer, GroupSerializer, UserProfilePhotoSerializer, UserInputSerializer
 from rest_framework import status, generics, filters
 from .models import User
 
@@ -16,6 +16,8 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 import json
 from rest_framework.parsers import FileUploadParser, MultiPartParser, FormParser
+import random
+from django.core.mail import send_mail
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -79,8 +81,33 @@ class QRCodeView(APIView):
 
         return  response
 
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def reset_passkey(request, pk):  
+    try:
+        user = User.objects.get(pk=pk) 
+    except User.DoesNotExist:
+         return Response({"error": "El usuario no existe"}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Generate a random six-digit password
+    password = str(random.randint(100000, 999999)) 
 
- 
+    # Send the password to the user's email
+    subject = 'Contraseña temporal'
+    message = f'Tu contraseña temporal es: {password}' 
+    to_email = user.email 
+    
+    try:
+        send_mail(subject, message, None, [to_email], fail_silently=False)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    #saving
+    user.set_password(password)
+    user.save()
+    
+    return Response({'message':'Clave de Acceso Cambiada'}, status=status.HTTP_201_CREATED)
+    
 class UsersListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = User.objects.all().order_by("-is_active")
@@ -94,19 +121,34 @@ class UsersListCreateView(generics.ListCreateAPIView):
             return self.serializer_class
 
     def create(self, request, *args, **kwargs):
-        user_data = request.data.get("user") 
-        serializer = self.get_serializer(data=user_data)
+        user_data = request.data.get("user")  
+        serializer = UserInputSerializer(data=user_data)
         serializer.is_valid(raise_exception=True)
 
+        # Generate a random six-digit password
+        password = str(random.randint(100000, 999999)) 
         user = serializer.save() 
-        user.set_password(user_data['password'])
+
+        # Send the password to the user's email
+        subject = 'Contraseña temporal'
+        message = f'Tu contraseña temporal es: {password}' 
+        to_email = user.email 
+        
+        try:
+            send_mail(subject, message, None, [to_email], fail_silently=False)
+        except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+  
+        #saving
+        user.set_password(password)
         user.save()
+
         groups_data = request.data.pop('groups')
         for group_data in groups_data: 
             group = Group.objects.get(id=group_data)
             user.groups.add(group)  
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers) 
 
 class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()

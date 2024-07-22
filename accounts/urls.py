@@ -16,6 +16,7 @@ urlpatterns = [
     path('qr-code/', views.QRCodeView.as_view(), name='qr-code-generate'),
     
     path('users/<int:pk>/password', views.UpdatePasswordView.as_view()),
+    path('users/<int:pk>/passkey-reset', views.reset_passkey),
     path('users/', views.UsersListCreateView.as_view() ), 
     path('users/<int:pk>/', views.UserDetailView.as_view() ), 
     path('users/<int:pk>/photo/', views.UpdateUserProfilePhotoView.as_view()),

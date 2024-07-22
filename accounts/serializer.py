@@ -11,9 +11,17 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class PasswordValidationSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
-
+ 
+class UserInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [ 'nombre','email']
+        
 class UserSerializer(serializers.ModelSerializer):  
+    nombre = serializers.CharField(required=False, allow_null=True)
+    apellido = serializers.CharField(required=False, allow_null=True)
     cedula = serializers.CharField(required=False, allow_null=True)
+    is_active = serializers.BooleanField(required=False, allow_null=True)
     telefono = serializers.CharField(required=False, allow_null=True)
     direccion = serializers.CharField(required=False, allow_null=True)
     
