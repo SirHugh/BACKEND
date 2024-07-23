@@ -5,7 +5,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(required=False)
     class Meta:
         model = Organization
-        fields = ['id', 'nombre', 'ruc', 'direccion', 'telefono','email','website','logo']
+        fields = ['id', 'nombre', 'ruc', 'direccion', 'telefono','email', 'website', 'logo', 'password']
 
     def get_photo_url(self, Organization):
         request = self.context.get('request')

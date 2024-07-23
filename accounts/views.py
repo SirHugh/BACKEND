@@ -17,7 +17,7 @@ from django.utils import timezone
 import json
 from rest_framework.parsers import FileUploadParser, MultiPartParser, FormParser
 import random
-from django.core.mail import send_mail
+from basics.email_config import send_email
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -98,7 +98,7 @@ def reset_passkey(request, pk):
     to_email = user.email 
     
     try:
-        send_mail(subject, message, None, [to_email], fail_silently=False)
+        send_email(subject, message, to_email)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -135,7 +135,7 @@ class UsersListCreateView(generics.ListCreateAPIView):
         to_email = user.email 
         
         try:
-            send_mail(subject, message, None, [to_email], fail_silently=False)
+            send_email(subject, message, to_email)
         except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   

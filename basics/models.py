@@ -11,6 +11,7 @@ class Organization(models.Model):
     email = models.CharField(max_length=255)
     website = models.CharField(max_length=255)
     logo = models.ImageField(upload_to=upload_to, blank=True, null=True) 
+    password = models.CharField(max_length=50, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.pk and Organization.objects.exists():
