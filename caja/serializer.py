@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import DescuentoBeca, FormaPago, Arancel, BajaInventario, Timbrado, Producto, Comprobante, Venta, DetalleVenta, PagoVenta, Compra, DetalleCompra, FlujoCaja, Extraccion, TipoActividad, Actividad, PagoActividad
 from academico.models import Alumno, Matricula, Cliente, Grado, Periodo
+from academico.serializer import ClienteSerializer
 from accounts.models import User
 
 class TimbradoSerializer(serializers.ModelSerializer):
@@ -175,15 +176,19 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
     cliente = serializers.SerializerMethodField()
     forma_pago = serializers.SerializerMethodField()
     nro_factura = serializers.SerializerMethodField()
+    timbrado = serializers.SerializerMethodField()
+    validez_timbrado = serializers.SerializerMethodField() 
+    
+    
 
     class Meta:
         model = Comprobante
-        fields = ['id_comprobante', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'monto', 'cliente', 'aranceles', 'ventas', 'actividades', 'forma_pago']
+        fields = ['id_comprobante', 'timbrado', 'validez_timbrado', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'forma_pago', 'monto', 'cliente', 'aranceles', 'ventas', 'actividades']
 
     def get_cliente(self, obj):
         try:
-            cliente = obj.id_cliente.__str__()
-            return cliente
+            cliente = Cliente.objects.get(pk=obj.id_cliente.id_cliente)
+            return ClienteSerializer(cliente).data
         except Cliente.DoesNotExist:
             return None
 
@@ -214,6 +219,14 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
     def get_nro_factura(self, obj):
         nro_factura = f'{str(obj.id_timbrado.establecimiento).zfill(3)}-{str(obj.id_timbrado.punto_expedicion).zfill(3)}-{str(obj.nro_factura).zfill(7)}'
         return nro_factura
+    
+    def get_timbrado(self, obj):
+        return getattr(obj.id_timbrado, 'nro_timbrado', None)
+    
+    def get_validez_timbrado(self, obj):
+        fecha_desde = obj.id_timbrado.fecha_desde.strftime('%d-%m-%Y')
+        fecha_hasta = obj.id_timbrado.fecha_hasta.strftime('%d-%m-%Y')
+        return f'{fecha_desde} al {fecha_hasta}'
 # 
 # 
 # ----- Detalle Compra serializers
