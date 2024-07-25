@@ -19,6 +19,7 @@ class Producto(models.Model):
     ]
     
     id_producto = models.AutoField(primary_key=True)
+    codigo = models.CharField(max_length=10, null=True, blank=True, unique=True)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=254, null=True, blank=True)
     tipo = models.CharField(max_length=2, choices=TIPO_PRODUCTO)

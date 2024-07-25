@@ -14,16 +14,35 @@ from django.db.models import Q
 
 class ProductoListCreateView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticated, DjangoModelPermissions]
-    queryset = Producto.objects.all()
+    queryset = Producto.objects.all().order_by('codigo')
     serializer_class = ProductoSerializer
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter] 
     search_fields = ['nombre','descripcion']
     filterset_fields = ['tipo', 'grados','es_activo']
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        codigo = instance.codigo
+        instance.codigo = f"{codigo}-{instance.id_producto}"
+        instance.save()
+        return Response(serializer.data)
 
 class ProductoDetailView(generics.RetrieveUpdateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data) 
+        serializer.is_valid(raise_exception=True) 
+        instance = serializer.save() 
+        codigo = instance.codigo
+        instance.codigo = f"{codigo}-{instance.id_producto}"
+        instance.save()
+        return Response(serializer.data) 
 
 # ---------------------------------------------
 # ---------vistas de Ajuste------------------
@@ -659,4 +678,46 @@ class FormaPagoDetailView(generics.RetrieveUpdateAPIView):
     queryset = FormaPago.objects.all()
     serializer_class = serializer.FormaPagoSerializer
     # permission_classes = (IsAuthenticated,)
+
+
+from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.text import MIMEText
+from basics.email_config import send_email
+
+class FileUploadView(APIView):
+    parser_class = (MultiPartParser, FormParser) 
+    
+    def post(self, request, format=None):
+        file_obj = request.FILES.get('pdf_file')
+        email = request.POST.get('email')
+
+        if email and file_obj:
+            subject = 'PDF File Attachment'
+            message = 'Please find the attached PDF file.'
+
+            # Create the email message with attachment
+            msg = MIMEMultipart()
+            msg['Subject'] = subject
+            msg['From'] = 'your_from_email@example.com'
+            msg['To'] = email
+
+            # Attach the PDF file
+            attachment = MIMEApplication(file_obj.read())
+            attachment['Content-Disposition'] = f'attachment; filename={file_obj.name}'
+            msg.attach(attachment)
+
+            # Add the message body
+            msg.attach(MIMEText(message))
+
+            # Send the email using the send_email method
+            send_email(subject, msg.as_string(), email)
+
+            return Response('Email sent successfully!')
+        else:
+            return Response('Invalid request. Please provide an email and a PDF file.')
+    
     

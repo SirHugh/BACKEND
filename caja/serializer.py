@@ -177,9 +177,7 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
     forma_pago = serializers.SerializerMethodField()
     nro_factura = serializers.SerializerMethodField()
     timbrado = serializers.SerializerMethodField()
-    validez_timbrado = serializers.SerializerMethodField() 
-    
-    
+    validez_timbrado = serializers.SerializerMethodField()  
 
     class Meta:
         model = Comprobante

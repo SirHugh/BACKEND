@@ -35,7 +35,7 @@ class Alumno(models.Model):
         return self.apellido 
     
     def __str__(self):
-         return f"{self.cedula} - {self.nombre} {self.apellido}"
+         return f"{self.nombre} {self.apellido}"
     
     def get_alumno(self):
         return f"{self.nombre} {self.apellido}"

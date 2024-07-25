@@ -59,4 +59,6 @@ urlpatterns = [
     path('forma_pago/', views.FormaPagoListCreateView.as_view() ),
     path('forma_pago/<int:pk>', views.FormaPagoDetailView.as_view() ),
     
+    path('send_email/', views.FileUploadView.as_view() ),
+    
 ]

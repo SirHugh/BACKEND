@@ -42,7 +42,7 @@ class AlumnoListCreateView(generics.ListCreateAPIView):
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['cedula']
-    search_fields = ['^cedula', '^nombre', '^apellido']
+    search_fields = ['^cedula', 'nombre', 'apellido']
 
     def get_serializer_class(self):
         if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":
@@ -62,7 +62,7 @@ class MatriculaListCreateView(generics.ListCreateAPIView):
     pagination_class = OptionalPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['id_grado', 'anio_lectivo', 'es_activo', 'id_alumno__cedula', 'id_alumno']
-    search_fields = ['^id_alumno__apellido', 'id_alumno__nombre','^id_alumno__cedula','^id_grado__grado',  ]
+    search_fields = ['id_alumno__apellido', 'id_alumno__nombre','^id_alumno__cedula','^id_grado__grado',  ]
 
     def get_serializer_class(self):
         if self.request.method == 'POST' or  self.request.method == "PUT" or  self.request.method == "PATCH":

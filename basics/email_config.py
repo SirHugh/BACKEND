@@ -3,6 +3,8 @@ from basics.models import Organization
 from django.shortcuts import HttpResponse
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 def get_email_server_config():
     organization = Organization.objects.first()  # retrieve the first organization (assuming there's only one)
@@ -37,3 +39,30 @@ def send_email(subject, message, to_email):
         server.quit()
     else:
         print("No email server config found")
+
+def send_email_with_attachment(email, pdf_file):
+    if email and pdf_file:
+        subject = 'PDF File Attachment'
+        message = 'Please find the attached PDF file.'
+
+        # Create the email message with attachment
+        msg = MIMEMultipart()
+        msg['Subject'] = subject
+        msg['From'] = 'your_from_email@example.com'
+        msg['To'] = email
+
+        # Attach the PDF file
+        attachment = MIMEApplication(pdf_file.read())
+        attachment['Content-Disposition'] = f'attachment; filename={pdf_file.name}'
+        msg.attach(attachment)
+
+        # Add the message body
+        msg.attach(MIMEText(message))
+
+        # Send the email using the send_email method
+        send_email(subject, msg.as_string(), email)
+
+        return HttpResponse('Email sent successfully!')
+    else:
+        return HttpResponse('Invalid request. Please provide an email and a PDF file.')
+    
