@@ -209,3 +209,37 @@ class PeriodoDetailView(generics.RetrieveUpdateAPIView):
 
         return super().update(request, *args, **kwargs)
     
+#---------------------
+#---------reports
+#----------------------
+
+from django.views import View
+from django.http import JsonResponse
+
+class MatriculaReportView(View):
+    def get(self, request):
+        periodo = Periodo.get_current()
+        # Total matriculas
+        total_matriculados = Matricula.objects.filter(anio_lectivo=periodo.periodo).count()
+        
+        # Total active matriculas
+        total_matriculas_activos = Matricula.objects.filter(anio_lectivo=periodo.periodo, es_activo=True).count()
+
+        # Total inactive matriculas
+        total_desmatriculados = Matricula.objects.filter(anio_lectivo=periodo.periodo,fecha_desmatriculacion__isnull=False, es_activo=False).count()
+
+        # Total interno matriculas
+        total_interno_matriculas = Matricula.objects.filter(anio_lectivo=periodo.periodo,es_interno=True).count()
+
+        # Total non interno matriculas
+        total_externo_matriculas = Matricula.objects.filter(anio_lectivo=periodo.periodo, es_interno=False).count()
+
+        data = {
+            'total_matriculas': total_matriculados,
+            'matriculas_activas': total_matriculas_activos,
+            'desmatriculados': total_desmatriculados,
+            'interno_matriculas': total_interno_matriculas,
+            'externo_matriculas': total_externo_matriculas
+        }
+
+        return JsonResponse(data)

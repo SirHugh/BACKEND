@@ -37,4 +37,6 @@ urlpatterns = [
     path('responsable/', views.ResponsableListCreateView.as_view()),
     path('responsable/<int:pk>/', views.ResponsableDetailView.as_view()),
     path('responsable/find/', views.ResponsableVerifyView.as_view()),
+    
+    path('reports/matriculas/', views.MatriculaReportView.as_view()),
 ]

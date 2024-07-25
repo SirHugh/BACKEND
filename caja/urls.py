@@ -61,4 +61,9 @@ urlpatterns = [
     
     path('send_email/', views.FileUploadView.as_view() ),
     
+    # Reportes
+    path('reports/products/', views.ProductCountsView.as_view() ),
+    path('reports/flujo-caja/', views.CashFlowCountsView.as_view() ),
+    
+    
 ]

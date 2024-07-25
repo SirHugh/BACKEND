@@ -1,7 +1,7 @@
 from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import FormaPago, Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
+from .models import DescuentoBeca, FormaPago, Producto, Arancel, Timbrado, Comprobante, PagoVenta, Venta, DetalleVenta, Compra, FlujoCaja, BajaInventario
 from .serializer import DescuentoBecaInputSerializer, ProductoSerializer, ArancelInputSerializer, ArancelOutputSerializer, TimbradoSerializer, VentaInputSerializer, DetalleVentaSerializer, PagoVentaInputSerializer 
 from . import serializer
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
@@ -719,5 +719,104 @@ class FileUploadView(APIView):
             return Response('Email sent successfully!')
         else:
             return Response('Invalid request. Please provide an email and a PDF file.')
+
+#-------
+#-------
+#-------    
+#-------
+# reports
+#-------
+#-------
+#-------
+from django.db.models import Sum, Count, Q, F
+from django.views import View
+from django.http import JsonResponse
+from .models import Producto, DetalleVenta
+
+class ProductCountsView(View):
+    # permission_classes = (IsAuthenticated,)
     
+    def get(self, request):
+        # Total products sold
+        total_sold = DetalleVenta.objects.aggregate(total_sold=Sum('cantidad'))['total_sold']
+
+        # Total amount of products, active, inactive and total
+        product_counts = Producto.objects.aggregate(
+            total=Count('id_producto', filter=Q(tipo="PR")),
+            active=Count('id_producto', filter=Q(tipo="PR", es_activo=True)),
+            inactive=Count('id_producto', filter=Q(tipo="PR", es_activo=False))
+        )
+
+        # Amount of products below minimum level (stock_minimo)
+        low_stock = Producto.objects.filter(tipo="PR", stock__lt=F('stock_minimo')).count()
+
+        # Amount of products out of stock
+        out_of_stock = Producto.objects.filter(stock=0, tipo="PR").count()
+
+        data = {
+            'total_sold': total_sold,
+            'total_products': product_counts['total'],
+            'active_products': product_counts['active'],
+            'inactive_products': product_counts['inactive'],
+            'low_stock': low_stock,
+            'out_of_stock': out_of_stock
+        }
+
+        return JsonResponse(data)
     
+class CashFlowCountsView(View):
+    # permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        # Total global entrada
+        total_entrada = FlujoCaja.objects.aggregate(total_entrada=Sum('entrada'))['total_entrada'] or 0
+
+        # Total global salida
+        total_salida = FlujoCaja.objects.aggregate(total_salida=Sum('salida'))['total_salida'] or 0
+
+        # Total global balance
+        balance_total = total_entrada - total_salida
+        
+         # Total amount of payments (monto)
+        total_pago_actividad = PagoActividad.objects.aggregate(total_pago=Sum('monto'))['total_pago'] or 0
+
+        # Total amount of payments (monto) from PagoVenta
+        total_pago_venta = PagoVenta.objects.filter(es_activo=False, id_comprobante__isnull=False).aggregate(total_pago=Sum('monto'))['total_pago'] or 0
+
+        # Total amount of payments (monto) from Arancel
+        total_pago_arancel = Arancel.objects.filter(es_activo=False, id_comprobante__isnull=False).aggregate(total_pago=Sum('monto'))['total_pago'] or 0
+
+        # Total amount of descuentos from DescuentoBeca
+        total_descuento_beca = DescuentoBeca.objects.aggregate(total_descuento=Sum('monto'))['total_descuento'] or 0
+
+       # Total amount of comprobantes (monto) registered
+        total_monto_comprobantes = Comprobante.objects.aggregate(total_monto=Sum('monto'))['total_monto'] or 0
+        
+        # Total amount of comprobantes registered
+        total_comprobantes = Comprobante.objects.count()
+
+         # Total amount of comprobantes (monto) by forma de pago
+        forma_pago_summary = Comprobante.objects.values('id_formaPago__nombre').annotate(
+            cantidad=Count('id_comprobante'),
+            total_monto=Sum('monto')
+        )
+
+        forma_pago_data = {}
+        for forma_pago in forma_pago_summary:
+            forma_pago_data[f"cantidad_{forma_pago['id_formaPago__nombre']}"] = forma_pago['cantidad']
+            forma_pago_data[f"total_{forma_pago['id_formaPago__nombre']}"] = forma_pago['total_monto']
+
+        data = {
+            'total_global_entrada': total_entrada,
+            'total_global_salida': total_salida,
+            'total_global_balance': balance_total,
+            'total_pago_actividad': total_pago_actividad,
+            'total_pago_venta': total_pago_venta,
+            'total_pago_arancel': total_pago_arancel,
+            'total_descuento_beca': total_descuento_beca,
+            'total_comprobantes': total_comprobantes,
+            'total_monto_comprobantes': total_monto_comprobantes,
+            **forma_pago_data
+        }
+
+        return JsonResponse(data)
