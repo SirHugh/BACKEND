@@ -8,7 +8,7 @@ urlpatterns = [
  
     # Comprobante endpoints
     path('comprobante/', views.ComprobanteListCreateView.as_view()), 
-    path('comprobante/<int:pk>', views.ComprobanteDetailView.as_view()),
+    path('comprobante/<int:pk>/', views.ComprobanteDetailView.as_view()),
     
     # producto endpoints
     path('producto/', views.ProductoListCreateView.as_view()),
