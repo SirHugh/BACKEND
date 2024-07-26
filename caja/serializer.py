@@ -225,6 +225,39 @@ class ComprobanteOutputSerializer(serializers.ModelSerializer):
         fecha_desde = obj.id_timbrado.fecha_desde.strftime('%d-%m-%Y')
         fecha_hasta = obj.id_timbrado.fecha_hasta.strftime('%d-%m-%Y')
         return f'{fecha_desde} al {fecha_hasta}'
+    
+class ComprobanteSpecialSerializer(serializers.ModelSerializer):
+    cliente = serializers.SerializerMethodField()
+    forma_pago = serializers.SerializerMethodField()
+    nro_factura = serializers.SerializerMethodField()
+    timbrado = serializers.SerializerMethodField()
+    validez_timbrado = serializers.SerializerMethodField()  
+
+    class Meta:
+        model = Comprobante
+        fields = ['id_comprobante', 'timbrado', 'validez_timbrado', 'fecha', 'hora', 'nro_factura', 'tipo_pago', 'forma_pago', 'monto', 'cliente']
+
+    def get_cliente(self, obj):
+        try:
+            cliente = Cliente.objects.get(pk=obj.id_cliente.id_cliente)
+            return ClienteSerializer(cliente).data
+        except Cliente.DoesNotExist:
+            return None 
+        
+    def get_forma_pago(self, obj):
+        return getattr(obj.id_formaPago, "nombre", None) 
+    
+    def get_nro_factura(self, obj):
+        nro_factura = f'{str(obj.id_timbrado.establecimiento).zfill(3)}-{str(obj.id_timbrado.punto_expedicion).zfill(3)}-{str(obj.nro_factura).zfill(7)}'
+        return nro_factura
+    
+    def get_timbrado(self, obj):
+        return getattr(obj.id_timbrado, 'nro_timbrado', None)
+    
+    def get_validez_timbrado(self, obj):
+        fecha_desde = obj.id_timbrado.fecha_desde.strftime('%d-%m-%Y')
+        fecha_hasta = obj.id_timbrado.fecha_hasta.strftime('%d-%m-%Y')
+        return f'{fecha_desde} al {fecha_hasta}'
 # 
 # 
 # ----- Detalle Compra serializers
@@ -314,10 +347,11 @@ class FlujoCajaOutputSerializer(serializers.ModelSerializer):
     facturas = serializers.SerializerMethodField()
     compras = serializers.SerializerMethodField()
     extracciones = serializers.SerializerMethodField()
+    usuario = serializers.SerializerMethodField()
 
     class Meta:
         model = FlujoCaja
-        fields = [ 'id_flujoCaja', 'id_usuario', 'fecha', 'hora_apertura', 'hora_cierre', 'monto_apertura', 
+        fields = [ 'id_flujoCaja', 'id_usuario', 'usuario', 'fecha', 'hora_apertura', 'hora_cierre', 'monto_apertura', 
                   'monto_cierre', 'entrada', 'salida', 'es_activo', 'facturas', 'compras', 'extracciones']
     
     def get_compras(self, obj):
@@ -326,11 +360,14 @@ class FlujoCajaOutputSerializer(serializers.ModelSerializer):
             return CompraInputSerializer(compras, many=True).data
         except Compra.DoesNotExist:
             return None
+        
+    def get_usuario(self, obj):
+        return obj.id_usuario.__str__()
     
     def get_facturas(self, obj):
         try:
             facturas = Comprobante.objects.filter(id_flujoCaja=obj.id_flujoCaja)
-            return ComprobanteInputSerializer(facturas, many=True).data
+            return ComprobanteSpecialSerializer(facturas, many=True).data
         except Comprobante.DoesNotExist:
             return None
     
