@@ -52,15 +52,18 @@ class BecadoInputSerializer(serializers.ModelSerializer):
 class BecadoOutputSerializer(serializers.ModelSerializer):
     alumno = serializers.SerializerMethodField()
     grado = serializers.SerializerMethodField()
+    beca = serializers.SerializerMethodField()
     
     class Meta:
         model = Becado
-        fields = ['id', 'id_beca', 'id_matricula', 'es_activo', 'alumno', 'grado']
+        fields = ['id', 'id_beca', 'beca', 'id_matricula', 'es_activo', 'alumno', 'grado']
     
     def get_alumno(self, obj):
         return AlumnoOutputSerializer(obj.id_matricula.id_alumno).data
     def get_grado(self, obj):
         return GradoNameSerializer(obj.id_matricula.id_grado).data
+    def get_beca(self, obj):
+        return obj.id_beca.nombre
     
 class BecaMatriculaSerializer(serializers.ModelSerializer):
     beca = serializers.SerializerMethodField() 
