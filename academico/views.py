@@ -142,7 +142,7 @@ class ClienteListCreateView(generics.ListCreateAPIView):
     pagination_class = OptionalPagination 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['cedula']
-    search_fields = ['cedula', 'nombre', 'apellido']
+    search_fields = ['^cedula', 'nombre', 'apellido']
 
 class ClienteDetailView(generics.RetrieveUpdateAPIView):
     queryset = Cliente.objects.all()
