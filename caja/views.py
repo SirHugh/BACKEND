@@ -155,7 +155,7 @@ class ComprobanteListCreateView(generics.ListCreateAPIView):
             timbrado.save()
 
         serializer.validated_data['id_flujoCaja'] = flujoCaja
-        flujoCaja.monto_cierre += comprobante['monto']
+        flujoCaja.monto_flujoCaja += comprobante['monto']
         flujoCaja.entrada += comprobante['monto']
         
         flujoCaja.save() 
@@ -380,10 +380,10 @@ class CompraListCreateView(generics.ListCreateAPIView):
  
         if id_flujoCaja: 
             flujoCaja = FlujoCaja.objects.get(pk=id_flujoCaja)
-            if flujoCaja.monto_cierre < compra['monto']:
+            if flujoCaja.monto_flujoCaja < compra['monto']:
                 return Response({'error':'No hay suficiente saldo en la caja'}, status=status.HTTP_412_PRECONDITION_FAILED)
             else:                
-                flujoCaja.monto_cierre -= compra['monto']
+                flujoCaja.monto_flujoCaja -= compra['monto']
                 flujoCaja.salida += compra['monto']
                 flujoCaja.save()
                 pass

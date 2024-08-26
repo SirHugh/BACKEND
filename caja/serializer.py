@@ -352,7 +352,7 @@ class FlujoCajaOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = FlujoCaja
         fields = [ 'id_flujoCaja', 'id_usuario', 'usuario', 'fecha', 'hora_apertura', 'hora_cierre', 'monto_apertura', 
-                  'monto_cierre', 'entrada', 'salida', 'es_activo', 'facturas', 'compras', 'extracciones']
+                  'monto_flujoCaja', 'monto_cierre', 'entrada', 'salida', 'es_activo', 'facturas', 'compras', 'extracciones']
     
     def get_compras(self, obj):
         try:
