@@ -217,7 +217,9 @@ class PeriodoDetailView(generics.RetrieveUpdateAPIView):
 from django.views import View
 from django.http import JsonResponse
 
-class MatriculaReportView(View):
+class MatriculaReportView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    
     def get(self, request):
         periodo = Periodo.get_current()
         # Total matriculas

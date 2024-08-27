@@ -728,13 +728,12 @@ class FileUploadView(APIView):
 #-------
 #-------
 #-------
-from django.db.models import Sum, Count, Q, F
-from django.views import View
+from django.db.models import Sum, Count, Q, F 
 from django.http import JsonResponse
 from .models import Producto, DetalleVenta
 
-class ProductCountsView(View):
-    # permission_classes = (IsAuthenticated,)
+class ProductCountsView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
     
     def get(self, request):
         # Total products sold
@@ -764,8 +763,8 @@ class ProductCountsView(View):
 
         return JsonResponse(data)
     
-class CashFlowCountsView(View):
-    # permission_classes = (IsAuthenticated,)
+class CashFlowCountsView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
     
     def get(self, request):
         # Total global entrada
