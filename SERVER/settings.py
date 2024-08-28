@@ -36,7 +36,7 @@ SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=False, cast=bool
 
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=False, cast=bool)
 
-ALLOWED_HOSTS =['*'] 
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="", cast=Csv()) 
 
 
 # Application definition
@@ -187,10 +187,7 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "static"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend')
-]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
