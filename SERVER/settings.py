@@ -10,8 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+import configparser
+
 from pathlib import Path
+from decouple import config, Csv
 from datetime import timedelta 
+
+
+from dj_database_url import parse as db_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +27,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-eiq1k-e%#4)5l#^g=%gua=e@121p^z-)37st#qhlwty)=obj5z'
+SECRET_KEY = config("SECRET_KEY", default="", cast=str)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=False, cast=bool)
+
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=False, cast=bool)
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="", cast=Csv()) 
 
 
 # Application definition
@@ -130,16 +140,12 @@ WSGI_APPLICATION = 'SERVER.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'upc_school_db',
-        'USER': 'postgres',
-        'PASSWORD': 'home777',
-        'HOST': 'localhost',
-        'PORT': '5432'
-    }
-    
+DATABASES = { 
+    "default": config(
+        "DATABASE_URL",
+        default="postgres://postgres:postgres@127.0.0.1:5432/dbname",
+        cast=db_url,
+    )
 }
 
 CONN_MAX_AGE = 600 # 10 minutes
@@ -181,6 +187,10 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
