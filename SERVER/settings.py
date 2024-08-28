@@ -189,8 +189,8 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-] 
+    os.path.join(BASE_DIR, 'frontend')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
